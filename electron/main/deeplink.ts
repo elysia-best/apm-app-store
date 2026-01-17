@@ -1,3 +1,7 @@
+/**
+ * Deep link handler for Electron app.
+ * Author: juxnpxblo@github
+ */
 import { app } from "electron";
 type Query = Record<string, string>;
 export type Listener = (query: Query) => any;
