@@ -13,6 +13,18 @@ on:
       - ".gitignore"
       - ".github/**"
       - "!.github/workflows/build.yml"
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "**.spec.js"
+      - ".idea"
+      - ".vscode"
+      - ".dockerignore"
+      - "Dockerfile"
+      - ".gitignore"
+      - ".github/**"
+      - "!.github/workflows/build.yml"
 
 jobs:
   build:
@@ -33,8 +45,6 @@ jobs:
 
       - name: Install Dependencies
         run: | 
-          npm install --production
-          npm install electron-app-universal-protocol-client
           npm install
 
       - name: Build Release Files
