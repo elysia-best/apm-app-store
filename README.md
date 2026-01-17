@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![APM Logo](public/amber-pm-logo.png)
+<img src="public/amber-pm-logo.png" alt="APM Logo" width="200" height="200" />
 
 **星火 APM 琥珀软件包管理器 - 桌面应用商店**
 
