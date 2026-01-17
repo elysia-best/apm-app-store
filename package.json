@@ -29,6 +29,7 @@
     "@dotenvx/dotenvx": "^1.51.4",
     "@vitejs/plugin-vue": "^5.0.4",
     "electron": "^39.2.7",
+    "electron-app-universal-protocol-client": "^2.1.1",
     "electron-builder": "^24.13.3",
     "typescript": "^5.4.2",
     "vite": "^5.1.5",

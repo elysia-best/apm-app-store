@@ -41,12 +41,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 20.x
+          node-version: 20.19.2
 
       - name: Install Dependencies
         run: | 
+          npm install -G node-gyp@11.1.0
           npm install
-          npm install -D electron-app-universal-protocol-client
 
       - name: Build Release Files
         run: npm run build
