@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![APM Logo](public/icon.png)
+![APM Logo](public/amber-pm-logo.png)
 
 **星火 APM 琥珀软件包管理器 - 桌面应用商店**
 
