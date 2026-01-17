@@ -69,6 +69,6 @@ export default defineConfig(({ command }) => {
         port: +url.port,
       }
     })(),
-    clearScreen: false,
+    clearScreen: false, 
   }
 })
