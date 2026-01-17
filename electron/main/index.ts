@@ -1,8 +1,15 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
+import { electronAppUniversalProtocolClient } from 'electron-app-universal-protocol-client'
+
+import { handleUrlScheme } from './handle-url-scheme.js'
+
+if (!app.requestSingleInstanceLock()) {
+  app.exit(0);
+}
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -76,6 +83,17 @@ async function createWindow() {
     return { action: 'deny' }
   })
   // win.webContents.on('will-navigate', (event, url) => { }) #344
+  
+  // Initialize universal protocol client
+  electronAppUniversalProtocolClient.on(
+    'request',
+    handleUrlScheme
+  );
+
+  await electronAppUniversalProtocolClient.initialize({
+    protocol: 'apmstore',
+    mode: 'development', // Make sure to use 'production' when script is executed in bundled app
+  });
 }
 
 app.whenReady().then(createWindow)

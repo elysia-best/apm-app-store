@@ -16,6 +16,14 @@
 
     <ScreenPreview :show="showPreview" :screenshots="screenshots" :current-screen-index="currentScreenIndex"
       @close="closeScreenPreview" @prev="prevScreen" @next="nextScreen" />
+
+    <DownloadQueue :downloads="downloads" @pause="pauseDownload" @resume="resumeDownload"
+      @cancel="cancelDownload" @retry="retryDownload" @clear-completed="clearCompletedDownloads"
+      @show-detail="showDownloadDetailModalFunc" />
+
+    <DownloadDetail :show="showDownloadDetailModal" :download="currentDownload" @close="closeDownloadDetail"
+      @pause="pauseDownload" @resume="resumeDownload" @cancel="cancelDownload" @retry="retryDownload"
+      @open-app="openDownloadedApp" />
   </div>
 </template>
 
@@ -26,6 +34,8 @@ import AppHeader from './components/AppHeader.vue';
 import AppGrid from './components/AppGrid.vue';
 import AppDetailModal from './components/AppDetailModal.vue';
 import ScreenPreview from './components/ScreenPreview.vue';
+import DownloadQueue from './components/DownloadQueue.vue';
+import DownloadDetail from './components/DownloadDetail.vue';
 import { APM_STORE_ARCHITECTURE, APM_STORE_BASE_URL } from './global/StoreConfig';
 import axios from 'axios';
 
@@ -47,7 +57,10 @@ const currentApp = ref(null);
 const currentScreenIndex = ref(0);
 const screenshots = ref([]);
 const loading = ref(true);
-const observer = ref(null);
+const downloads = ref([]);
+const showDownloadDetailModal = ref(false);
+const currentDownload = ref(null);
+let downloadIdCounter = 0;
 
 // 计算属性
 const filteredApps = computed(() => {
@@ -160,6 +173,31 @@ const nextScreen = () => {
 const handleInstall = () => {
   if (!currentApp.value?.Pkgname) return;
 
+  // 创建下载任务
+  const download = {
+    id: ++downloadIdCounter,
+    name: currentApp.value.Name,
+    pkgname: currentApp.value.Pkgname,
+    version: currentApp.value.Version,
+    icon: `${APM_STORE_BASE_URL}/${APM_STORE_ARCHITECTURE}/${currentApp.value._category}/${currentApp.value.Pkgname}/icon.png`,
+    status: 'downloading',
+    progress: 0,
+    downloadedSize: 0,
+    totalSize: 0,
+    speed: 0,
+    timeRemaining: 0,
+    startTime: Date.now(),
+    logs: [
+      { time: Date.now(), message: '开始下载...' }
+    ],
+    source: 'APM Store'
+  };
+
+  downloads.value.push(download);
+
+  // 模拟下载进度（实际应该调用真实的下载 API）
+  simulateDownload(download);
+
   const encodedPkg = encodeURIComponent(currentApp.value.Pkgname);
   openApmStoreUrl(`apmstore://install?pkg=${encodedPkg}`, {
     fallbackText: `/usr/bin/apm-installer --install ${currentApp.value.Pkgname}`
@@ -242,6 +280,131 @@ const escapeHtml = (s) => {
   })[c]);
 };
 
+// 下载管理方法
+const simulateDownload = (download) => {
+  // 模拟下载进度（实际应该调用真实的下载 API）
+  const totalSize = Math.random() * 100 + 50; // MB
+  download.totalSize = totalSize * 1024 * 1024;
+  
+  const interval = setInterval(() => {
+    const downloadObj = downloads.value.find(d => d.id === download.id);
+    if (!downloadObj || downloadObj.status !== 'downloading') {
+      clearInterval(interval);
+      return;
+    }
+
+    // 更新进度
+    downloadObj.progress = Math.min(downloadObj.progress + Math.random() * 10, 100);
+    downloadObj.downloadedSize = (downloadObj.progress / 100) * downloadObj.totalSize;
+    downloadObj.speed = (Math.random() * 5 + 1) * 1024 * 1024; // 1-6 MB/s
+    
+    const remainingBytes = downloadObj.totalSize - downloadObj.downloadedSize;
+    downloadObj.timeRemaining = Math.ceil(remainingBytes / downloadObj.speed);
+
+    // 添加日志
+    if (downloadObj.progress % 20 === 0 && downloadObj.progress > 0 && downloadObj.progress < 100) {
+      downloadObj.logs.push({
+        time: Date.now(),
+        message: `下载进度: ${downloadObj.progress.toFixed(0)}%`
+      });
+    }
+
+    // 下载完成
+    if (downloadObj.progress >= 100) {
+      clearInterval(interval);
+      downloadObj.status = 'installing';
+      downloadObj.logs.push({
+        time: Date.now(),
+        message: '下载完成，开始安装...'
+      });
+
+      // 模拟安装
+      setTimeout(() => {
+        downloadObj.status = 'completed';
+        downloadObj.endTime = Date.now();
+        downloadObj.logs.push({
+          time: Date.now(),
+          message: '安装完成！'
+        });
+      }, 2000);
+    }
+  }, 500);
+};
+
+const pauseDownload = (id) => {
+  const download = downloads.value.find(d => d.id === id);
+  if (download && download.status === 'downloading') {
+    download.status = 'paused';
+    download.logs.push({
+      time: Date.now(),
+      message: '下载已暂停'
+    });
+  }
+};
+
+const resumeDownload = (id) => {
+  const download = downloads.value.find(d => d.id === id);
+  if (download && download.status === 'paused') {
+    download.status = 'downloading';
+    download.logs.push({
+      time: Date.now(),
+      message: '继续下载...'
+    });
+    simulateDownload(download);
+  }
+};
+
+const cancelDownload = (id) => {
+  const index = downloads.value.findIndex(d => d.id === id);
+  if (index !== -1) {
+    const download = downloads.value[index];
+    download.status = 'cancelled';
+    download.logs.push({
+      time: Date.now(),
+      message: '下载已取消'
+    });
+    // 延迟删除，让用户看到取消状态
+    setTimeout(() => {
+      downloads.value.splice(index, 1);
+    }, 1000);
+  }
+};
+
+const retryDownload = (id) => {
+  const download = downloads.value.find(d => d.id === id);
+  if (download && download.status === 'failed') {
+    download.status = 'downloading';
+    download.progress = 0;
+    download.downloadedSize = 0;
+    download.logs.push({
+      time: Date.now(),
+      message: '重新开始下载...'
+    });
+    simulateDownload(download);
+  }
+};
+
+const clearCompletedDownloads = () => {
+  downloads.value = downloads.value.filter(d => d.status !== 'completed');
+};
+
+const showDownloadDetailModalFunc = (download) => {
+  currentDownload.value = download;
+  showDownloadDetailModal.value = true;
+};
+
+const closeDownloadDetail = () => {
+  showDownloadDetailModal.value = false;
+  currentDownload.value = null;
+};
+
+const openDownloadedApp = (download) => {
+  const encodedPkg = encodeURIComponent(download.pkgname);
+  openApmStoreUrl(`apmstore://launch?pkg=${encodedPkg}`, {
+    fallbackText: `打开应用: ${download.pkgname}`
+  });
+};
+
 const loadCategories = async () => {
   try {
     const response = await axiosInstance.get(`/${APM_STORE_ARCHITECTURE}/categories.json`);
@@ -314,8 +477,6 @@ watch(isDarkTheme, (newVal) => {
   }
 });
 
-// 暴露给模板
-const appsList = computed(() => filteredApps.value);
 </script>
 
 <style scoped>
