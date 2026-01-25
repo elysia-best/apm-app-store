@@ -29,6 +29,8 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import axios from 'axios';
+import pino from 'pino';
 import AppSidebar from './components/AppSidebar.vue';
 import AppHeader from './components/AppHeader.vue';
 import AppGrid from './components/AppGrid.vue';
@@ -36,8 +38,11 @@ import AppDetailModal from './components/AppDetailModal.vue';
 import ScreenPreview from './components/ScreenPreview.vue';
 import DownloadQueue from './components/DownloadQueue.vue';
 import DownloadDetail from './components/DownloadDetail.vue';
-import { APM_STORE_ARCHITECTURE, APM_STORE_BASE_URL } from './global/StoreConfig';
-import axios from 'axios';
+import { APM_STORE_ARCHITECTURE, APM_STORE_BASE_URL, currentApp } from './global/storeConfig';
+import { downloads } from './global/downloadStatus';
+import { handleInstall } from './js/processInstall';
+
+const logger = pino();
 
 // Axios 全局配置
 const axiosInstance = axios.create({
@@ -53,14 +58,11 @@ const activeCategory = ref('all');
 const searchQuery = ref('');
 const showModal = ref(false);
 const showPreview = ref(false);
-const currentApp = ref(null);
 const currentScreenIndex = ref(0);
 const screenshots = ref([]);
 const loading = ref(true);
-const downloads = ref([]);
 const showDownloadDetailModal = ref(false);
 const currentDownload = ref(null);
-let downloadIdCounter = 0;
 
 // 计算属性
 const filteredApps = computed(() => {
@@ -168,40 +170,6 @@ const nextScreen = () => {
   if (currentScreenIndex.value < screenshots.value.length - 1) {
     currentScreenIndex.value++;
   }
-};
-
-const handleInstall = () => {
-  if (!currentApp.value?.Pkgname) return;
-
-  // 创建下载任务
-  const download = {
-    id: ++downloadIdCounter,
-    name: currentApp.value.Name,
-    pkgname: currentApp.value.Pkgname,
-    version: currentApp.value.Version,
-    icon: `${APM_STORE_BASE_URL}/${APM_STORE_ARCHITECTURE}/${currentApp.value._category}/${currentApp.value.Pkgname}/icon.png`,
-    status: 'downloading',
-    progress: 0,
-    downloadedSize: 0,
-    totalSize: 0,
-    speed: 0,
-    timeRemaining: 0,
-    startTime: Date.now(),
-    logs: [
-      { time: Date.now(), message: '开始下载...' }
-    ],
-    source: 'APM Store'
-  };
-
-  downloads.value.push(download);
-
-  // 模拟下载进度（实际应该调用真实的下载 API）
-  simulateDownload(download);
-
-  const encodedPkg = encodeURIComponent(currentApp.value.Pkgname);
-  openApmStoreUrl(`apmstore://install?pkg=${encodedPkg}`, {
-    fallbackText: `/usr/bin/apm-installer --install ${currentApp.value.Pkgname}`
-  });
 };
 
 const handleUpdate = () => {
@@ -365,6 +333,7 @@ const cancelDownload = (id) => {
     });
     // 延迟删除，让用户看到取消状态
     setTimeout(() => {
+      logger.info(`删除下载: ${download.pkgname}`);
       downloads.value.splice(index, 1);
     }, 1000);
   }
@@ -410,13 +379,14 @@ const loadCategories = async () => {
     const response = await axiosInstance.get(`/${APM_STORE_ARCHITECTURE}/categories.json`);
     categories.value = response.data;
   } catch (error) {
-    console.error('读取 categories.json 失败', error);
+    logger.error('读取 categories.json 失败', error);
   }
 };
 
 const loadApps = async () => {
   loading.value = true;
   try {
+    logger.info('开始加载应用数据...');
     const promises = Object.keys(categories.value).map(async category => {
       try {
         const response = await axiosInstance.get(`/${APM_STORE_ARCHITECTURE}/${category}/applist.json`);
@@ -437,7 +407,7 @@ const loadApps = async () => {
       });
     });
   } catch (error) {
-    console.error('加载应用数据失败', error);
+    logger.error('加载应用数据失败', error);
   } finally {
     loading.value = false;
   }

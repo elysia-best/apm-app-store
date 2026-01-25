@@ -120,7 +120,7 @@ const emit = defineEmits([
   'show-detail'
 ]);
 
-const isExpanded = ref(true);
+const isExpanded = ref(false);
 
 const activeDownloads = computed(() => {
   return props.downloads.filter(d => 
@@ -187,6 +187,7 @@ const showDownloadDetail = (download) => {
 
 .queue-header:hover {
   background: var(--glass);
+  border-radius: 12px 12px 0 0;
 }
 
 .queue-info {

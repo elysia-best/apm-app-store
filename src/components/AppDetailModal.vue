@@ -81,7 +81,7 @@
 
 <script setup>
 import { computed, defineProps, defineEmits } from 'vue';
-import { APM_STORE_ARCHITECTURE, APM_STORE_BASE_URL } from '../global/StoreConfig';
+import { APM_STORE_ARCHITECTURE, APM_STORE_BASE_URL } from '../global/storeConfig';
 
 const props = defineProps({
   show: {

@@ -21,7 +21,7 @@
 
 <script setup>
 import { computed, defineProps, defineEmits, onMounted, onBeforeUnmount, ref, watch } from 'vue';
-import { APM_STORE_ARCHITECTURE, APM_STORE_BASE_URL } from '../global/StoreConfig';
+import { APM_STORE_ARCHITECTURE, APM_STORE_BASE_URL } from '../global/storeConfig';
 
 const props = defineProps({
   app: {

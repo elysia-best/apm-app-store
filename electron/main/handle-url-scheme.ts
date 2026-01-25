@@ -1,4 +1,3 @@
-import { dialog } from 'electron'
 import { deepLink } from './deeplink';
 
 deepLink.on("event", (query) => {
