@@ -6,7 +6,7 @@ import pino from 'pino';
 
 const logger = pino({ 'name': 'download-manager' });
 
-type DownloadTask = {
+type InstallTask = {
   id: number;
   execCommand: string;
   execParams: string[];
@@ -14,7 +14,7 @@ type DownloadTask = {
   webContents: WebContents | null;
 };
 
-const tasks = new Map<number, DownloadTask>();
+const tasks = new Map<number, InstallTask>();
 
 let idle = true; // Indicates if the installation manager is idle
 
@@ -82,7 +82,7 @@ ipcMain.on('queue-install', async (event, download_json) => {
   }
   execParams.push('install', '-y', pkgname);
 
-  const task: DownloadTask = {
+  const task: InstallTask = {
     id,
     execCommand,
     execParams,
@@ -167,3 +167,37 @@ function processNextInQueue(index: number) {
       processNextInQueue(0);
   });
 }
+
+ipcMain.handle('check-installed', async (_event, pkgname: string) => {
+  if (!pkgname) {
+    logger.warn('check-installed missing pkgname');
+    return false;
+  }
+  let isInstalled = false;
+
+  logger.info(`检查应用是否已安装: ${pkgname}`);
+
+  let child = spawn('/usr/bin/apm', ['list', '--installed', pkgname], {
+    shell: true,
+    env: process.env
+  });
+
+  let output = '';
+  
+  child.stdout.on('data', (data) => {
+    output += data.toString();
+  });
+  
+  await new Promise<void>((resolve) => {
+    child.on('close', (code) => {
+      if (code === 0 && output.includes(pkgname)) {
+        isInstalled = true;
+        logger.info(`应用已安装: ${pkgname}`);
+      } else {
+        logger.info(`应用未安装: ${pkgname}`);
+      }
+      resolve();
+    });
+  });
+  return isInstalled;
+});

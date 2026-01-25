@@ -11,8 +11,8 @@
       <AppGrid :apps="filteredApps" :loading="loading" @open-detail="openDetail" />
     </main>
 
-    <AppDetailModal :show="showModal" :app="currentApp" :screenshots="screenshots" @close="closeDetail"
-      @install="handleInstall" @open-preview="openScreenPreview" />
+    <AppDetailModal :show="showModal" :app="currentApp" :screenshots="screenshots" :isinstalled="currentAppIsInstalled" @close="closeDetail"
+      @install="handleInstall" @remove="handleRemove" @open-preview="openScreenPreview" />
 
     <ScreenPreview :show="showPreview" :screenshots="screenshots" :current-screen-index="currentScreenIndex"
       @close="closeScreenPreview" @prev="prevScreen" @next="nextScreen" />
@@ -40,7 +40,7 @@ import DownloadQueue from './components/DownloadQueue.vue';
 import DownloadDetail from './components/DownloadDetail.vue';
 import { APM_STORE_ARCHITECTURE, APM_STORE_BASE_URL, currentApp } from './global/storeConfig';
 import { downloads } from './global/downloadStatus';
-import { handleInstall, handleRetry } from './modeuls/processInstall';
+import { handleInstall, handleRetry, handleRemove } from './modeuls/processInstall';
 
 const logger = pino();
 
@@ -60,6 +60,7 @@ const showModal = ref(false);
 const showPreview = ref(false);
 const currentScreenIndex = ref(0);
 const screenshots = ref([]);
+const currentAppIsInstalled = ref(false);
 const loading = ref(true);
 const showDownloadDetailModal = ref(false);
 const currentDownload = ref(null);
@@ -127,10 +128,20 @@ const openDetail = (app) => {
   loadScreenshots(app);
   showModal.value = true;
 
+  // 检测本地是否已经安装了该应用
+  currentAppIsInstalled.value = false;
+  checkAppInstalled(app);
+
   // 确保模态框显示后滚动到顶部
   nextTick(() => {
     const modal = document.querySelector('.modal');
     if (modal) modal.scrollTop = 0;
+  });
+};
+
+const checkAppInstalled = (app) => { 
+  window.ipcRenderer.invoke('check-installed', app.Pkgname).then((isInstalled) => {
+    currentAppIsInstalled.value = isInstalled;
   });
 };
 

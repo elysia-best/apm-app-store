@@ -15,8 +15,11 @@
           </div>
         </div>
         <div class="modal-actions">
-          <button class="install-btn" @click="handleInstall">
+          <button v-if="!isinstalled" class="install-btn" @click="handleInstall">
             <i class="fas fa-download"></i> 安装
+          </button>
+          <button v-else class="install-btn remove" @click="handelRemove">
+            <i class="fas fa-trash"></i> 卸载
           </button>
           <button class="close-modal" @click="closeModal" aria-label="关闭">×</button>
         </div>
@@ -95,10 +98,14 @@ const props = defineProps({
   screenshots: {
     type: Array,
     required: true
+  },
+  isinstalled: {
+    type: Boolean,
+    required: true 
   }
 });
 
-const emit = defineEmits(['close', 'install', 'open-preview']);
+const emit = defineEmits(['close', 'install', 'remove', 'open-preview']);
 
 const iconPath = computed(() => {
   return props.app ? `${APM_STORE_BASE_URL}/${APM_STORE_ARCHITECTURE}/${props.app._category}/${props.app.Pkgname}/icon.png` : '';
@@ -112,6 +119,10 @@ const handleInstall = () => {
   emit('install');
 };
 
+const handelRemove = () => {
+  emit('remove');
+};
+
 const openPreview = (index) => {
   emit('open-preview', index);
 };
@@ -119,4 +130,9 @@ const openPreview = (index) => {
 
 <style scoped>
 /* 该组件样式已在全局样式中定义 */
+.install-btn.remove {
+  border-color: rgb(231, 76, 60);
+  box-shadow: 0 4px 12px rgb(231, 76, 60);
+  background: linear-gradient(90deg, rgb(231, 76, 60), rgb(231, 76, 60));
+}
 </style>

@@ -53,6 +53,11 @@ export const handleRetry = (download_: DownloadItem) => {
   window.ipcRenderer.send('queue-install', JSON.stringify(download_));
 };
 
+export const handleRemove = (download_: DownloadItem) => {
+  if (!currentApp.value?.Pkgname) return;
+  console.log('请求卸载: ', currentApp.value.Pkgname);
+}
+
 window.ipcRenderer.on('install-status', (_event, log: InstallLog) => {
     const downloadObj: any = downloads.value.find(d => d.id === log.id);
     downloadObj.status = log.message;

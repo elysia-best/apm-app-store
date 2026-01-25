@@ -10,7 +10,7 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 import './handle-url-scheme.js'
-import './backend/download-manager.js'
+import './backend/install-manager.js'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
