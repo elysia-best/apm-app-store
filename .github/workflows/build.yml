@@ -34,6 +34,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
+        package: [deb, rpm]
         include:
           - package: deb
             docker_image: "debian:12"
@@ -46,12 +47,12 @@ jobs:
         if: matrix.package == 'deb'
         run: |
           apt-get update
-          apt-get install -y curl git wget build-essential devscripts fakeroot equivs lintian
+          apt-get install -y curl git wget devscripts fakeroot equivs lintian
 
       - name: Install Build Dependencies
         if: matrix.package == 'rpm'
         run: |
-          dnf install -y curl git wget @development-tools rpmdevtools rpmlint
+          dnf install -y curl git wget rpm-build rpmdevtools rpmlint
 
       - name: Checkout Code
         uses: actions/checkout@v6
