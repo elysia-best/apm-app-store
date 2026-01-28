@@ -1,0 +1,50 @@
+appId: "store.spark-app.apm"
+asar: true
+productName: "apm-app-store"
+artifactName: "apm-app-store_${version}_${os}.${ext}"
+directories:
+  output: "release/${version}"
+files:
+  - "dist"
+  - "dist-electron"
+
+linux:
+  icon: "public/amber-pm-logo.icns"
+  category: "System"
+  executableName: "apm-app-store"
+  desktop:
+    entry:
+      Name: "APM AppStore"
+      Name[zh_CN]: "APM 应用商店"
+      Type: "Application"
+      Categories: "System;"
+  mimeTypes:
+    - "x-scheme-handler/apmstore"
+  target:
+    - "AppImage"
+    - "deb"
+    - "rpm"
+deb:
+  depends:
+    - "libgtk-3-0"
+    - "libnotify4"
+    - "libnss3"
+    - "libxss1"
+    - "libxtst6"
+    - "xdg-utils"
+    - "libatspi2.0-0"
+    - "libuuid1"
+    - "libsecret-1-0"
+    - "apm"
+rpm:
+  depends:
+    - "gtk3"
+    - "libnotify"
+    - "nss"
+    - "libXScrnSaver"
+    - "libXtst"
+    - "xdg-utils"
+    - "at-spi2-core"
+    - "libuuid"
+    - "libsecret"
+    - "apm"
