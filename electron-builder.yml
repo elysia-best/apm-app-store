@@ -7,6 +7,9 @@ directories:
 files:
   - "dist"
   - "dist-electron"
+extraFiles:
+  - from: "extras"
+    to: "extras"
 
 linux:
   icon: "public/amber-pm-logo.icns"
@@ -25,6 +28,8 @@ linux:
     - "deb"
     - "rpm"
 deb:
+  afterInstall: "scripts/debian-postinst.sh"
+  afterRemove: "scripts/debian-postrm.sh"
   depends:
     - "libgtk-3-0"
     - "libnotify4"

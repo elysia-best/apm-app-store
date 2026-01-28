@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
- "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+ "https://specifications.freedesktop.org/PolicyKit/1.0/policyconfig.dtd">
 <policyconfig>
     <vendor>AmberPM</vendor>
     <icon_name>x-package-repository</icon_name>
-    <action id="store.spark-app.amber-pm-installer">
-        <description>运行amber-pm-installer需要权限</description>
-        <message>要使用amber-pm-installer需要权限</message>
+    <action id="store.spark-app.amber-pm-store">
+        <description>运行apm-app-store管理软件需要权限</description>
+        <message>要使用apm-app-store管理软件需要权限</message>
         <defaults>
             <allow_any>yes</allow_any>
             <allow_inactive>yes</allow_inactive>
             <allow_active>yes</allow_active>
         </defaults>
-        <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/apm-installer</annotate>
+        <annotate key="org.freedesktop.policykit.exec.path">/opt/apm-app-store/extras/apm-installer</annotate>
         <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
     </action>
 </policyconfig>
