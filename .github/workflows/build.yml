@@ -77,5 +77,5 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: release_for_${{ matrix.package }}
-          path: release/
+          path: release/**/*.${{ matrix.package }}
           retention-days: 5
