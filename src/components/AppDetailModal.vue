@@ -6,35 +6,37 @@
         class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/70 px-4 py-10 backdrop-blur-sm"
         @click.self="closeModal">
       <div class="modal-panel relative w-full max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-white/95 p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
-        <button type="button"
-          class="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/60 bg-white/50 text-slate-500 backdrop-blur-sm transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
-          @click="closeModal" aria-label="关闭">
-          <i class="fas fa-xmark"></i>
-        </button>
-
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:pr-12">
-          <div class="flex items-center gap-4">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div class="flex flex-1 items-center gap-4">
             <div
               class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-b from-slate-100 to-slate-200 shadow-inner dark:from-slate-800 dark:to-slate-700">
               <img v-if="app" :src="iconPath" alt="icon" class="h-full w-full object-cover" />
             </div>
             <div class="space-y-1">
-              <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ app?.Name || '' }}</p>
+              <div class="flex items-center gap-3">
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ app?.Name || '' }}</p>
+                <!-- Close button for mobile layout could be considered here if needed, but for now sticking to desktop layout logic mainly -->
+              </div>
               <p class="text-sm text-slate-500 dark:text-slate-400">{{ app?.Pkgname || '' }} · {{ app?.Version || '' }}</p>
             </div>
           </div>
-          <div class="flex flex-wrap gap-3 lg:ml-auto">
+          <div class="flex flex-wrap gap-2 lg:ml-auto">
             <button v-if="!isinstalled" type="button"
-              class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-brand to-brand-dark px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5"
+              class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-brand to-brand-dark px-4 py-2 text-sm font-semibold text-white shadow-lg disabled:opacity-40 transition hover:-translate-y-0.5"
               @click="handleInstall">
               <i class="fas fa-download"></i>
               <span>安装</span>
             </button>
             <button v-else type="button"
-              class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/30 transition hover:-translate-y-0.5"
+              class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/30 disabled:opacity-40 transition hover:-translate-y-0.5"
               @click="handleRemove">
               <i class="fas fa-trash"></i>
               <span>卸载</span>
+            </button>
+            <button type="button"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/70 text-slate-500 transition hover:text-slate-900 dark:border-slate-700"
+              @click="closeModal" aria-label="关闭">
+              <i class="fas fa-xmark"></i>
             </button>
           </div>
         </div>
