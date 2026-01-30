@@ -22,7 +22,7 @@ const checkSuperUserCommand = async (): Promise<string> => {
   let superUserCmd = '';
   const execAsync = promisify(exec);
   if (process.getuid && process.getuid() !== 0) {
-    const { stdout, stderr } = await execAsync('which pkexec');
+    const { stdout, stderr } = await execAsync('which /usr/bin/pkexec');
     if (stderr) {
       logger.error('没有找到 pkexec 命令');
       return;
