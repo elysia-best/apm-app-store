@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
 import electron from 'vite-plugin-electron/simple'
 import pkg from './package.json'
 
@@ -61,6 +62,7 @@ export default defineConfig(({ command }) => {
         // See 👉 https://github.com/electron-vite/vite-plugin-electron-renderer
         renderer: {},
       }),
+      tailwindcss(),
     ],
     server: (() => {
       if (process.env.VSCODE_DEBUG) {

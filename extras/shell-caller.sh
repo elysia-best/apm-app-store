@@ -12,16 +12,8 @@ if [[ "$1" != "apm" ]]; then
     exit 1
 fi
 
-# 检查 apm 命令是否存在
-if ! command -v apm &>/dev/null; then
-    echo "apm 命令未找到，请确保已安装 APM 环境"
-    exit 127
-fi
-
 # 执行 apm 命令（跳过第一个参数 "apm"）
-output=$(/usr/bin/apm "${@:2}" 2>&1)
+/usr/bin/apm "${@:2}" 2>&1
 exit_code=$?
-
-echo "$output"
 
 exit $exit_code

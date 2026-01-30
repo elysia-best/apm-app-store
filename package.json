@@ -42,7 +42,9 @@
     "vue-tsc": "^3.2.4"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.2",
-    "pino": "^10.3.0"
+    "pino": "^10.3.0",
+    "tailwindcss": "^4.1.18"
   }
 }
