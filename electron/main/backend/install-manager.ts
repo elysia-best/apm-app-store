@@ -301,7 +301,15 @@ ipcMain.on('remove-installed', async (_event, pkgname: string) => {
   let output = '';
   
   child.stdout.on('data', (data) => {
-    output += data.toString();
+    const chunk = data.toString();
+    output += chunk;
+    webContents.send('remove-progress', chunk);
+  });
+
+  child.stderr.on('data', (data) => {
+    const chunk = data.toString();
+    output += chunk;
+    webContents.send('remove-progress', chunk);
   });
 
   child.on('close', (code) => {

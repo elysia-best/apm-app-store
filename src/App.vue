@@ -14,7 +14,7 @@
     </main>
 
     <AppDetailModal data-app-modal="detail" :show="showModal" :app="currentApp" :screenshots="screenshots"
-      :isinstalled="currentAppIsInstalled" @close="closeDetail" @install="handleInstall" @remove="handleRemove"
+      :isinstalled="currentAppIsInstalled" @close="closeDetail" @install="handleInstall" @remove="requestUninstallFromDetail"
       @open-preview="openScreenPreview" />
 
     <ScreenPreview :show="showPreview" :screenshots="screenshots" :current-screen-index="currentScreenIndex"
@@ -36,6 +36,9 @@
       :error="updateError" :has-selected="hasSelectedUpgrades" @close="closeUpdateModal"
       @refresh="refreshUpgradableApps" @toggle-all="toggleAllUpgrades"
       @upgrade-selected="upgradeSelectedApps" @upgrade-one="upgradeSingleApp" />
+
+    <UninstallConfirmModal :show="showUninstallModal" :app="uninstallTargetApp" @close="closeUninstallModal"
+      @success="onUninstallSuccess" />
   </div>
 </template>
 
@@ -52,9 +55,10 @@ import DownloadQueue from './components/DownloadQueue.vue';
 import DownloadDetail from './components/DownloadDetail.vue';
 import InstalledAppsModal from './components/InstalledAppsModal.vue';
 import UpdateAppsModal from './components/UpdateAppsModal.vue';
+import UninstallConfirmModal from './components/UninstallConfirmModal.vue';
 import { APM_STORE_ARCHITECTURE, APM_STORE_BASE_URL, currentApp, currentAppIsInstalled } from './global/storeConfig';
 import { downloads } from './global/downloadStatus';
-import { handleInstall, handleRetry, handleRemove, handleUpgrade } from './modeuls/processInstall';
+import { handleInstall, handleRetry, handleUpgrade } from './modeuls/processInstall';
 
 const logger = pino();
 
@@ -85,6 +89,8 @@ const showUpdateModal = ref(false);
 const upgradableApps = ref([]);
 const updateLoading = ref(false);
 const updateError = ref('');
+const showUninstallModal = ref(false);
+const uninstallTargetApp = ref(null);
 
 // 计算属性
 const filteredApps = computed(() => {
@@ -293,23 +299,35 @@ const refreshInstalledApps = async () => {
   }
 };
 
-const uninstallInstalledApp = async (app) => {
-  if (!app?.pkgname) return;
-  const target = installedApps.value.find(item => item.pkgname === app.pkgname);
-  if (target) target.removing = true;
-  try {
-    const result = await window.ipcRenderer.invoke('uninstall-installed', app.pkgname);
-    if (!result?.success) {
-      installedError.value = result?.message || '卸载失败';
-    } else {
-      installedApps.value = installedApps.value.filter(item => item.pkgname !== app.pkgname);
-    }
-  } catch (error) {
-    installedError.value = error?.message || '卸载失败';
-  } finally {
-    const restore = installedApps.value.find(item => item.pkgname === app.pkgname);
-    if (restore) restore.removing = false;
+const requestUninstall = (app) => {
+  uninstallTargetApp.value = app;
+  showUninstallModal.value = true;
+};
+
+const requestUninstallFromDetail = () => {
+  if (currentApp.value) {
+    requestUninstall(currentApp.value);
   }
+};
+
+const closeUninstallModal = () => {
+  showUninstallModal.value = false;
+  uninstallTargetApp.value = null;
+};
+
+const onUninstallSuccess = () => {
+  // 刷新已安装列表（如果在显示）
+  if (showInstalledModal.value) {
+    refreshInstalledApps();
+  }
+  // 更新当前详情页状态（如果在显示）
+  if (showModal.value && currentApp.value) {
+    checkAppInstalled(currentApp.value);
+  }
+};
+
+const uninstallInstalledApp = (app) => {
+  requestUninstall(app);
 };
 
 const openApmStoreUrl = (url, { fallbackText } = {}) => {
