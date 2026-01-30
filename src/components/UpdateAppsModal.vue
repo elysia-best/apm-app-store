@@ -1,51 +1,82 @@
 <template>
-  <div class="modal-backdrop" :style="{ display: show ? 'flex' : 'none' }" role="dialog" aria-hidden="false">
-    <div class="modal update-modal">
-      <div class="modal-header">
-        <div class="modal-title-section">
-          <div class="modal-title">软件更新</div>
-          <div class="modal-subtitle">可更新的 APM 应用</div>
+  <Transition enter-active-class="duration-200 ease-out" enter-from-class="opacity-0 scale-95"
+    enter-to-class="opacity-100 scale-100" leave-active-class="duration-150 ease-in"
+    leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+    <div v-if="show"
+      class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/70 px-4 py-10 backdrop-blur-sm">
+      <div class="w-full max-w-4xl rounded-3xl border border-white/10 bg-white/95 p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1">
+            <p class="text-2xl font-semibold text-slate-900 dark:text-white">软件更新</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400">可更新的 APM 应用</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button"
+              class="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:text-slate-200"
+              :disabled="loading" @click="$emit('refresh')">
+              <i class="fas fa-sync-alt"></i>
+              刷新
+            </button>
+            <button type="button"
+              class="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:text-slate-200"
+              :disabled="loading || apps.length === 0" @click="$emit('toggle-all')">
+              <i class="fas fa-check-square"></i>
+              全选/全不选
+            </button>
+            <button type="button"
+              class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-brand to-brand-dark px-4 py-2 text-sm font-semibold text-white shadow-lg disabled:opacity-40"
+              :disabled="loading || !hasSelected" @click="$emit('upgrade-selected')">
+              <i class="fas fa-upload"></i>
+              更新选中
+            </button>
+            <button type="button"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/70 text-slate-500 transition hover:text-slate-900 dark:border-slate-700"
+              @click="$emit('close')" aria-label="关闭">
+              <i class="fas fa-xmark"></i>
+            </button>
+          </div>
         </div>
-        <div class="modal-actions">
-          <button class="apm-btn" :disabled="loading" @click="$emit('refresh')">
-            <i class="fas fa-sync-alt"></i> 刷新
-          </button>
-          <button class="apm-btn" :disabled="loading || apps.length === 0" @click="$emit('toggle-all')">
-            <i class="fas fa-check-square"></i> 全选/全不选
-          </button>
-          <button class="apm-btn" :disabled="loading || !hasSelected" @click="$emit('upgrade-selected')">
-            <i class="fas fa-upload"></i> 更新选中
-          </button>
-          <button class="close-modal" @click="$emit('close')" aria-label="关闭">×</button>
-        </div>
-      </div>
 
-      <div class="update-content">
-        <div v-if="loading" class="update-empty">正在检查可更新应用…</div>
-        <div v-else-if="error" class="update-empty error">{{ error }}</div>
-        <div v-else-if="apps.length === 0" class="update-empty">暂无可更新应用</div>
-        <div v-else class="update-list">
-          <label v-for="app in apps" :key="app.pkgname" class="update-item">
-            <input type="checkbox" v-model="app.selected" :disabled="app.upgrading" />
-            <div class="update-info">
-              <div class="update-name">{{ app.pkgname }}</div>
-              <div class="update-meta">
-                <span>当前 {{ app.currentVersion || '-' }}</span>
-                <span class="dot">·</span>
-                <span>更新至 {{ app.newVersion || '-' }}</span>
+        <div class="mt-6 space-y-4">
+          <div v-if="loading"
+            class="rounded-2xl border border-dashed border-slate-200/80 px-4 py-10 text-center text-slate-500 dark:border-slate-800/80 dark:text-slate-400">
+            正在检查可更新应用…
+          </div>
+          <div v-else-if="error"
+            class="rounded-2xl border border-rose-200/70 bg-rose-50/60 px-4 py-6 text-center text-sm text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/10">
+            {{ error }}
+          </div>
+          <div v-else-if="apps.length === 0"
+            class="rounded-2xl border border-slate-200/70 px-4 py-10 text-center text-slate-500 dark:border-slate-800/70 dark:text-slate-400">
+            暂无可更新应用
+          </div>
+          <div v-else class="space-y-3">
+            <label v-for="app in apps" :key="app.pkgname"
+              class="flex flex-col gap-3 rounded-2xl border border-slate-200/70 bg-white/90 p-4 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/70 sm:flex-row sm:items-center sm:gap-4">
+              <div class="flex items-start gap-3">
+                <input type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 accent-brand focus:ring-brand"
+                  v-model="app.selected" :disabled="app.upgrading" />
+                <div>
+                  <p class="font-semibold text-slate-900 dark:text-white">{{ app.pkgname }}</p>
+                  <p class="text-sm text-slate-500 dark:text-slate-400">
+                    当前 {{ app.currentVersion || '-' }} · 更新至 {{ app.newVersion || '-' }}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div class="update-actions">
-              <button class="action-btn secondary" :disabled="app.upgrading" @click.prevent="$emit('upgrade-one', app)">
-                <i class="fas fa-arrow-up"></i>
-                {{ app.upgrading ? '更新中…' : '更新' }}
-              </button>
-            </div>
-          </label>
+              <div class="flex items-center gap-2 sm:ml-auto">
+                <button type="button"
+                  class="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:text-slate-200"
+                  :disabled="app.upgrading" @click.prevent="$emit('upgrade-one', app)">
+                  <i class="fas fa-arrow-up"></i>
+                  {{ app.upgrading ? '更新中…' : '更新' }}
+                </button>
+              </div>
+            </label>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -77,78 +108,3 @@ defineProps({
 defineEmits(['close', 'refresh', 'toggle-all', 'upgrade-selected', 'upgrade-one']);
 </script>
 
-<style scoped>
-.update-modal {
-  width: min(920px, calc(100% - 40px));
-}
-
-.update-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.update-empty {
-  padding: 32px;
-  text-align: center;
-  color: var(--muted);
-  background: var(--glass);
-  border-radius: var(--radius);
-}
-
-.update-empty.error {
-  color: #ef4444;
-}
-
-.update-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.update-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border-radius: var(--radius);
-  background: var(--glass);
-  box-shadow: var(--shadow);
-}
-
-.update-item input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent);
-}
-
-.update-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.update-name {
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.update-meta {
-  color: var(--muted);
-  font-size: 13px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-}
-
-.dot {
-  opacity: 0.6;
-}
-
-.update-actions {
-  display: flex;
-  align-items: center;
-}
-</style>

@@ -1,138 +1,115 @@
 <template>
-  <transition name="modal-fade">
-    <div v-if="show" class="modal-overlay" @click="handleOverlayClick">
-      <div class="modal-content download-detail" @click.stop>
-        <!-- 头部 -->
-        <div class="detail-header">
-          <button class="close-btn" @click="close">
-            <i class="fas fa-times"></i>
+  <Transition enter-active-class="duration-200 ease-out" enter-from-class="opacity-0 scale-95"
+    enter-to-class="opacity-100 scale-100" leave-active-class="duration-150 ease-in"
+    leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+    <div v-if="show"
+      class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/70 px-4 py-10 backdrop-blur-sm"
+      @click="handleOverlayClick">
+      <div class="w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-white/95 p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+        @click.stop>
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-2xl font-semibold text-slate-900 dark:text-white">下载详情</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400">实时了解安装进度</p>
+          </div>
+          <button type="button"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/60 text-slate-500 transition hover:text-slate-900 dark:border-slate-700"
+            @click="close">
+            <i class="fas fa-xmark"></i>
           </button>
-          <h2>下载详情</h2>
         </div>
 
-        <!-- 内容 -->
-        <div class="detail-body" v-if="download">
-          <!-- 应用信息 -->
-          <div class="app-section">
-            <div class="app-icon-large">
-              <img :src="download.icon" :alt="download.name" />
+        <div v-if="download" class="mt-6 space-y-6">
+          <div class="flex items-center gap-4 rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
+            <div class="h-16 w-16 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
+              <img :src="download.icon" :alt="download.name" class="h-full w-full object-cover" />
             </div>
-            <div class="app-info-detail">
-              <h3 class="app-name">{{ download.name }}</h3>
-              <div class="app-meta">
-                <span>{{ download.pkgname }}</span>
-                <span class="separator">·</span>
-                <span>{{ download.version }}</span>
-              </div>
+            <div class="flex-1">
+              <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ download.name }}</p>
+              <p class="text-sm text-slate-500 dark:text-slate-400">{{ download.pkgname }} · {{ download.version }}</p>
             </div>
           </div>
 
-          <!-- 下载状态 -->
-          <div class="status-section">
-            <div class="status-header">
-              <span class="status-label">状态</span>
-              <span class="status-value" :class="download.status">
+          <div class="space-y-4 rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-slate-500">状态</span>
+              <span
+                class="rounded-full px-3 py-1 text-xs font-semibold"
+                :class="{
+                  'bg-blue-100 text-blue-700': download.status === 'downloading',
+                  'bg-amber-100 text-amber-600': download.status === 'installing',
+                  'bg-emerald-100 text-emerald-700': download.status === 'completed',
+                  'bg-rose-100 text-rose-600': download.status === 'failed',
+                  'bg-slate-200 text-slate-600': download.status === 'paused'
+                }">
                 {{ getStatusText(download.status) }}
               </span>
             </div>
-            
-            <!-- 进度条 -->
-            <div v-if="download.status === 'downloading'" class="progress-section">
-              <div class="progress-bar-large">
-                <div class="progress-fill" :style="{ width: download.progress + '%' }"></div>
+
+            <div v-if="download.status === 'downloading'" class="space-y-3">
+              <div class="h-2 rounded-full bg-slate-100 dark:bg-slate-800">
+                <div class="h-full rounded-full bg-brand" :style="{ width: download.progress + '%' }"></div>
               </div>
-              <div class="progress-info">
+              <div class="flex flex-wrap items-center justify-between text-sm text-slate-500 dark:text-slate-400">
                 <span>{{ download.progress }}%</span>
                 <span v-if="download.downloadedSize && download.totalSize">
                   {{ formatSize(download.downloadedSize) }} / {{ formatSize(download.totalSize) }}
                 </span>
               </div>
-              <div v-if="download.speed" class="download-speed">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>{{ formatSpeed(download.speed) }}</span>
-                <span v-if="download.timeRemaining" class="time-remaining">
-                  剩余 {{ formatTime(download.timeRemaining) }}
-                </span>
+              <div v-if="download.speed" class="flex flex-wrap gap-3 text-sm text-slate-500 dark:text-slate-300">
+                <span class="flex items-center gap-2"><i class="fas fa-tachometer-alt"></i>{{ formatSpeed(download.speed) }}</span>
+                <span v-if="download.timeRemaining">剩余 {{ formatTime(download.timeRemaining) }}</span>
               </div>
             </div>
           </div>
 
-          <!-- 下载信息 -->
-          <div class="info-section">
-            <div class="info-item">
-              <span class="info-label">下载源</span>
-              <span class="info-value">{{ download.source || 'APM Store' }}</span>
+          <div class="rounded-2xl border border-slate-200/60 p-4 text-sm text-slate-600 dark:border-slate-800/60 dark:text-slate-300">
+            <div class="flex justify-between py-1">
+              <span class="text-slate-400">下载源</span>
+              <span class="font-medium text-slate-900 dark:text-white">{{ download.source || 'APM Store' }}</span>
             </div>
-            <div class="info-item" v-if="download.startTime">
-              <span class="info-label">开始时间</span>
-              <span class="info-value">{{ formatDate(download.startTime) }}</span>
+            <div v-if="download.startTime" class="flex justify-between py-1">
+              <span class="text-slate-400">开始时间</span>
+              <span>{{ formatDate(download.startTime) }}</span>
             </div>
-            <div class="info-item" v-if="download.endTime">
-              <span class="info-label">完成时间</span>
-              <span class="info-value">{{ formatDate(download.endTime) }}</span>
+            <div v-if="download.endTime" class="flex justify-between py-1">
+              <span class="text-slate-400">完成时间</span>
+              <span>{{ formatDate(download.endTime) }}</span>
             </div>
-            <div class="info-item" v-if="download.error">
-              <span class="info-label">错误信息</span>
-              <span class="info-value error">{{ download.error }}</span>
+            <div v-if="download.error" class="flex justify-between py-1 text-rose-500">
+              <span>错误信息</span>
+              <span class="text-right">{{ download.error }}</span>
             </div>
           </div>
 
-          <!-- 日志 -->
-          <div v-if="download.logs && download.logs.length > 0" class="logs-section">
-            <div class="logs-header">
-              <span>下载日志</span>
-              <button @click="copyLogs" class="copy-logs-btn">
+          <div v-if="download.logs && download.logs.length" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
+            <div class="mb-3 flex items-center justify-between">
+              <span class="font-semibold text-slate-800 dark:text-slate-100">下载日志</span>
+              <button type="button"
+                class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300"
+                @click="copyLogs">
                 <i class="fas fa-copy"></i>
                 复制日志
               </button>
             </div>
-            <div class="logs-content">
-              <div v-for="(log, index) in download.logs" :key="index" class="log-entry">
-                <span class="log-time">{{ formatLogTime(log.time) }}</span>
-                <span class="log-message">{{ log.message }}</span>
+            <div class="max-h-48 space-y-2 overflow-y-auto rounded-2xl bg-slate-50/80 p-3 font-mono text-xs text-slate-600 dark:bg-slate-900/60 dark:text-slate-300">
+              <div v-for="(log, index) in download.logs" :key="index" class="flex gap-3">
+                <span class="text-slate-400">{{ formatLogTime(log.time) }}</span>
+                <span>{{ log.message }}</span>
               </div>
             </div>
           </div>
 
-          <!-- 操作按钮 -->
-          <div class="actions-section">
-            <!-- <button
-              v-if="download.status === 'downloading'"
-              @click="pause"
-              class="action-btn secondary"
-            >
-              <i class="fas fa-pause"></i>
-              暂停下载
-            </button>
-            <button
-              v-else-if="download.status === 'paused'"
-              @click="resume"
-              class="action-btn primary"
-            >
-              <i class="fas fa-play"></i>
-              继续下载
-            </button> -->
-            <button
-              v-if="download.status === 'failed'"
-              @click="retry"
-              class="action-btn primary"
-            >
+          <div class="flex flex-wrap justify-end gap-3">
+            <button v-if="download.status === 'failed'" type="button"
+              class="inline-flex items-center gap-2 rounded-2xl border border-rose-300/60 px-4 py-2 text-sm font-semibold text-rose-500 transition hover:bg-rose-50"
+              @click="retry">
               <i class="fas fa-redo"></i>
               重试下载
             </button>
-            <!-- <button
-              v-if="download.status !== 'completed'"
-              @click="cancel"
-              class="action-btn danger"
-            >
-              <i class="fas fa-times"></i>
-              取消下载
-            </button> -->
-            <button
-              v-if="download.status === 'completed'"
-              @click="openApp"
-              class="action-btn primary"
-            >
+            <button v-if="download.status === 'completed'" type="button"
+              class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-brand to-brand-dark px-4 py-2 text-sm font-semibold text-white shadow-lg"
+              @click="openApp">
               <i class="fas fa-external-link-alt"></i>
               打开应用
             </button>
@@ -140,7 +117,7 @@
         </div>
       </div>
     </div>
-  </transition>
+  </Transition>
 </template>
 
 <script setup>
@@ -239,363 +216,3 @@ const copyLogs = () => {
   });
 };
 </script>
-
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 20px;
-}
-
-.modal-content {
-  background: var(--card);
-  border-radius: 16px;
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.detail-header {
-  padding: 24px;
-  border-bottom: 1px solid var(--border);
-  position: relative;
-}
-
-.detail-header h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.close-btn {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  background: transparent;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: var(--muted);
-  padding: 4px;
-  transition: color 0.2s;
-}
-
-.close-btn:hover {
-  color: var(--text);
-}
-
-.detail-body {
-  padding: 24px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.app-section {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-}
-
-.app-icon-large {
-  width: 80px;
-  height: 80px;
-  flex-shrink: 0;
-}
-
-.app-icon-large img {
-  width: 100%;
-  height: 100%;
-  border-radius: 16px;
-  object-fit: cover;
-}
-
-.app-info-detail {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.app-name {
-  margin: 0 0 8px 0;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.app-meta {
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.separator {
-  margin: 0 8px;
-}
-
-.status-section {
-  margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-}
-
-.status-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.status-label {
-  font-weight: 600;
-  color: var(--muted);
-}
-
-.status-value {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.status-value.downloading {
-  background: rgba(0, 122, 255, 0.1);
-  color: #007AFF;
-}
-
-.status-value.completed {
-  background: rgba(52, 199, 89, 0.1);
-  color: #34C759;
-}
-
-.status-value.failed {
-  background: rgba(255, 59, 48, 0.1);
-  color: #FF3B30;
-}
-
-.status-value.paused {
-  background: rgba(255, 149, 0, 0.1);
-  color: #FF9500;
-}
-
-.progress-section {
-  margin-top: 16px;
-}
-
-.progress-bar-large {
-  width: 100%;
-  height: 8px;
-  background: var(--glass);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--primary);
-  transition: width 0.3s ease;
-}
-
-.progress-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-
-.download-speed {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--text);
-}
-
-.download-speed i {
-  color: var(--primary);
-}
-
-.time-remaining {
-  margin-left: auto;
-  color: var(--muted);
-}
-
-.info-section {
-  margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-}
-
-.info-label {
-  color: var(--muted);
-  font-weight: 500;
-}
-
-.info-value {
-  text-align: right;
-  max-width: 60%;
-  word-break: break-word;
-}
-
-.info-value.error {
-  color: #FF3B30;
-}
-
-.logs-section {
-  margin-bottom: 24px;
-}
-
-.logs-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  font-weight: 600;
-}
-
-.copy-logs-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
-
-.copy-logs-btn:hover {
-  background: var(--glass);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.logs-content {
-  background: var(--glass);
-  border-radius: 8px;
-  padding: 12px;
-  max-height: 200px;
-  overflow-y: auto;
-  font-family: 'Consolas', 'Monaco', monospace;
-  font-size: 12px;
-}
-
-.log-entry {
-  display: flex;
-  gap: 12px;
-  padding: 4px 0;
-  color: var(--text);
-}
-
-.log-time {
-  color: var(--muted);
-  flex-shrink: 0;
-}
-
-.log-message {
-  flex: 1;
-}
-
-.actions-section {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-}
-
-/* .action-btn {
-  flex: 1;
-  min-width: 140px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s;
-} */
-
-/* .action-btn.primary {
-  background: var(--primary);
-  color: white;
-}
-
-.action-btn.primary:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.action-btn.secondary {
-  background: var(--glass);
-  color: var(--text);
-} */
-
-.action-btn.primary {
-  background: rgba(255, 59, 48, 0.1);
-  color: #FF3B30;
-  min-width: 140px;
-  align-items: center;
-  justify-content: center;
-}
-
-.action-btn.danger {
-  background: rgba(255, 59, 48, 0.1);
-  color: #FF3B30;
-  width: fill-available; 
-  min-width: 140px;
-  align-items: center;
-  justify-content: center;
-}
-
-.action-btn.danger:hover {
-  background: rgba(255, 59, 48, 0.2);
-}
-
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-fade-enter-active .modal-content,
-.modal-fade-leave-active .modal-content {
-  transition: transform 0.3s ease;
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-.modal-fade-enter-from .modal-content,
-.modal-fade-leave-to .modal-content {
-  transform: scale(0.9);
-}
-</style>

@@ -1,20 +1,15 @@
 <template>
-  <div class="card" @click="openDetail">
-    <div class="icon">
-      <img 
-        ref="iconImg"
-        :src="loadedIcon" 
-        alt="icon" 
-        class="lazy"
-        :class="{ 'loaded': isLoaded }"
-      >
+  <div @click="openDetail"
+    class="group flex h-full cursor-pointer gap-4 rounded-2xl border border-slate-200/70 bg-white/90 p-4 shadow-sm transition hover:-translate-y-1 hover:border-brand/50 hover:shadow-lg dark:border-slate-800/60 dark:bg-slate-900/60">
+    <div
+      class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-slate-100 to-slate-200 shadow-inner dark:from-slate-800 dark:to-slate-700">
+      <img ref="iconImg" :src="loadedIcon" alt="icon"
+        :class="['h-full w-full object-cover transition-opacity duration-300', isLoaded ? 'opacity-100' : 'opacity-0']" />
     </div>
-    <div class="meta">
-      <div class="title">{{ app.Name || '' }}</div>
-      <div class="muted">{{ app.Pkgname || '' }} · {{ app.Version || '' }}</div>
-      <div class="description">
-        {{ description }}
-      </div>
+    <div class="flex flex-1 flex-col gap-1 overflow-hidden">
+      <div class="truncate text-base font-semibold text-slate-900 dark:text-white">{{ app.Name || '' }}</div>
+      <div class="text-sm text-slate-500 dark:text-slate-400">{{ app.Pkgname || '' }} · {{ app.Version || '' }}</div>
+      <div class="text-sm text-slate-500 dark:text-slate-400">{{ description }}</div>
     </div>
   </div>
 </template>
@@ -103,17 +98,3 @@ onBeforeUnmount(() => {
   }
 });
 </script>
-
-<style scoped>
-/* 该组件样式已在全局样式中定义 */
-
-/* 懒加载过渡效果 */
-.lazy {
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-.lazy.loaded {
-  opacity: 1;
-}
-</style>

@@ -1,37 +1,61 @@
 <template>
-  <div class="modal-backdrop" :style="{ display: show ? 'flex' : 'none' }" role="dialog" aria-hidden="false">
-    <div class="modal installed-modal">
-      <div class="modal-header">
-        <div class="modal-title-section">
-          <div class="modal-title">已安装应用</div>
-          <div class="modal-subtitle">来自本机 APM 安装列表</div>
+  <Transition enter-active-class="duration-200 ease-out" enter-from-class="opacity-0 scale-95"
+    enter-to-class="opacity-100 scale-100" leave-active-class="duration-150 ease-in"
+    leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+    <div v-if="show"
+      class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/70 px-4 py-10 backdrop-blur-sm">
+      <div class="w-full max-w-4xl rounded-3xl border border-white/10 bg-white/95 p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-2xl font-semibold text-slate-900 dark:text-white">已安装应用</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400">来自本机 APM 安装列表</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="button"
+              class="inline-flex items-center gap-2 rounded-2xl border border-slate-200/70 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:text-slate-200"
+              :disabled="loading" @click="$emit('refresh')">
+              <i class="fas fa-sync-alt"></i>
+              刷新
+            </button>
+            <button type="button"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/70 text-slate-500 transition hover:text-slate-900 dark:border-slate-700"
+              @click="$emit('close')" aria-label="关闭">
+              <i class="fas fa-xmark"></i>
+            </button>
+          </div>
         </div>
-        <div class="modal-actions">
-          <button class="apm-btn" :disabled="loading" @click="$emit('refresh')">
-            <i class="fas fa-sync-alt"></i> 刷新
-          </button>
-          <button class="close-modal" @click="$emit('close')" aria-label="关闭">×</button>
-        </div>
-      </div>
 
-      <div class="installed-content">
-        <div v-if="loading" class="installed-empty">正在读取已安装应用…</div>
-        <div v-else-if="error" class="installed-empty error">{{ error }}</div>
-        <div v-else-if="apps.length === 0" class="installed-empty">暂无已安装应用</div>
-        <div v-else class="installed-list">
-          <div v-for="app in apps" :key="app.pkgname" class="installed-item">
-            <div class="installed-info">
-              <div class="installed-name">{{ app.pkgname }}</div>
-              <div class="installed-meta">
-                <span>{{ app.version }}</span>
-                <span class="dot">·</span>
-                <span>{{ app.arch }}</span>
-                <span v-if="app.flags" class="dot">·</span>
-                <span v-if="app.flags">{{ app.flags }}</span>
+        <div class="mt-6 space-y-4">
+          <div v-if="loading"
+            class="rounded-2xl border border-dashed border-slate-200/80 px-4 py-10 text-center text-slate-500 dark:border-slate-800/80 dark:text-slate-400">
+            正在读取已安装应用…
+          </div>
+          <div v-else-if="error"
+            class="rounded-2xl border border-rose-200/70 bg-rose-50/60 px-4 py-6 text-center text-sm text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/10">
+            {{ error }}
+          </div>
+          <div v-else-if="apps.length === 0"
+            class="rounded-2xl border border-slate-200/70 px-4 py-10 text-center text-slate-500 dark:border-slate-800/70 dark:text-slate-400">
+            暂无已安装应用
+          </div>
+          <div v-else class="space-y-3">
+            <div v-for="app in apps" :key="app.pkgname"
+              class="flex flex-col gap-3 rounded-2xl border border-slate-200/70 bg-white/90 p-4 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/70 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p class="text-base font-semibold text-slate-900 dark:text-white">{{ app.pkgname }}</p>
+                <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <span>{{ app.version }}</span>
+                  <span>·</span>
+                  <span>{{ app.arch }}</span>
+                  <template v-if="app.flags">
+                    <span>·</span>
+                    <span>{{ app.flags }}</span>
+                  </template>
+                </div>
               </div>
-            </div>
-            <div class="installed-actions">
-              <button class="apm-btn secondary danger" :disabled="app.removing" @click="$emit('uninstall', app)">
+              <button type="button"
+                class="inline-flex items-center gap-2 rounded-2xl border border-rose-300/60 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
+                :disabled="app.removing" @click="$emit('uninstall', app)">
                 <i class="fas fa-trash"></i>
                 {{ app.removing ? '卸载中…' : '卸载' }}
               </button>
@@ -40,7 +64,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -68,81 +92,3 @@ defineProps({
 defineEmits(['close', 'refresh', 'uninstall']);
 </script>
 
-<style scoped>
-.installed-modal {
-  width: min(900px, calc(100% - 40px));
-}
-
-.installed-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.installed-empty {
-  padding: 32px;
-  text-align: center;
-  color: var(--muted);
-  background: var(--glass);
-  border-radius: var(--radius);
-}
-
-.installed-empty.error {
-  color: #ef4444;
-}
-
-.installed-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.installed-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px;
-  border-radius: var(--radius);
-  background: var(--glass);
-  box-shadow: var(--shadow);
-}
-
-.installed-info {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.installed-name {
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.installed-meta {
-  color: var(--muted);
-  font-size: 13px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-}
-
-.dot {
-  opacity: 0.6;
-}
-
-.installed-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.apm-btn.danger {
-  background: #ef4444;
-  border-color: rgba(239, 68, 68, 0.2);
-}
-
-.apm-btn.danger:hover {
-  background: #dc2626;
-}
-</style>

@@ -1,18 +1,21 @@
 <template>
-  <div class="app-container">
-    <aside class="sidebar">
+  <div
+    class="flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 lg:flex-row">
+    <aside
+      class="w-full border-b border-slate-200/70 bg-white/80 px-5 py-6 backdrop-blur dark:border-slate-800/70 dark:bg-slate-900/70 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-72 lg:flex-col lg:border-b-0 lg:border-r">
       <AppSidebar :categories="categories" :active-category="activeCategory" :category-counts="categoryCounts"
         :is-dark-theme="isDarkTheme" @toggle-theme="toggleTheme" @select-category="selectCategory" />
     </aside>
 
-    <main class="main">
+    <main class="flex-1 px-4 py-6 lg:px-10">
       <AppHeader :search-query="searchQuery" :apps-count="filteredApps.length" @update-search="handleSearchInput"
         @update="handleUpdate" @list="handleList" />
       <AppGrid :apps="filteredApps" :loading="loading" @open-detail="openDetail" />
     </main>
 
-    <AppDetailModal :show="showModal" :app="currentApp" :screenshots="screenshots" :isinstalled="currentAppIsInstalled" @close="closeDetail"
-      @install="handleInstall" @remove="handleRemove" @open-preview="openScreenPreview" />
+    <AppDetailModal data-app-modal="detail" :show="showModal" :app="currentApp" :screenshots="screenshots"
+      :isinstalled="currentAppIsInstalled" @close="closeDetail" @install="handleInstall" @remove="handleRemove"
+      @open-preview="openScreenPreview" />
 
     <ScreenPreview :show="showPreview" :screenshots="screenshots" :current-screen-index="currentScreenIndex"
       @close="closeScreenPreview" @prev="prevScreen" @next="nextScreen" />
@@ -120,24 +123,18 @@ const hasSelectedUpgrades = computed(() => {
 });
 
 // 方法
+const syncThemePreference = (enabled) => {
+  document.documentElement.classList.toggle('dark', enabled);
+};
+
 const initTheme = () => {
   const savedTheme = localStorage.getItem('theme');
   isDarkTheme.value = savedTheme === 'dark';
-
-  if (isDarkTheme.value) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  }
+  syncThemePreference(isDarkTheme.value);
 };
 
 const toggleTheme = () => {
   isDarkTheme.value = !isDarkTheme.value;
-  localStorage.setItem('theme', isDarkTheme.value ? 'dark' : 'light');
-
-  if (isDarkTheme.value) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-  }
 };
 
 const selectCategory = (category) => {
@@ -156,7 +153,7 @@ const openDetail = (app) => {
 
   // 确保模态框显示后滚动到顶部
   nextTick(() => {
-    const modal = document.querySelector('.modal');
+    const modal = document.querySelector('[data-app-modal="detail"] .modal-panel');
     if (modal) modal.scrollTop = 0;
   });
 };
@@ -548,8 +545,8 @@ const loadApps = async () => {
   }
 };
 
-const handleSearchInput = (e) => {
-  searchQuery.value = e.target.value;
+const handleSearchInput = (value) => {
+  searchQuery.value = value;
 };
 
 // 生命周期钩子
@@ -575,15 +572,6 @@ onMounted(async () => {
 // 观察器
 watch(isDarkTheme, (newVal) => {
   localStorage.setItem('theme', newVal ? 'dark' : 'light');
-  if (newVal) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-  }
+  syncThemePreference(newVal);
 });
-
 </script>
-
-<style scoped>
-/* 这里可以放组件特定样式 */
-</style>
