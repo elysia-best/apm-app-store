@@ -41,6 +41,8 @@ deb:
     - "libuuid1"
     - "libsecret-1-0"
     - "apm"
+    - "xdg-utils"
+    - "shared-mime-info"
 rpm:
   afterInstall: "scripts/postinst.sh"
   afterRemove: "scripts/postrm.sh"
@@ -55,3 +57,5 @@ rpm:
     - "libuuid"
     - "libsecret"
     - "amber-package-manager"
+    - "xdg-utils"
+    - "shared-mime-info"
