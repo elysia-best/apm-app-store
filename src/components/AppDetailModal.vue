@@ -22,10 +22,12 @@
           </div>
           <div class="flex flex-wrap gap-2 lg:ml-auto">
             <button v-if="!isinstalled" type="button"
-              class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-brand to-brand-dark px-4 py-2 text-sm font-semibold text-white shadow-lg disabled:opacity-40 transition hover:-translate-y-0.5"
-              @click="handleInstall">
-              <i class="fas fa-download"></i>
-              <span>安装</span>
+              class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r px-4 py-2 text-sm font-semibold text-white shadow-lg disabled:opacity-40 transition hover:-translate-y-0.5"
+              :class="installFeedback ? 'from-emerald-500 to-emerald-600' : 'from-brand to-brand-dark'"
+              @click="handleInstall"
+              :disabled="installFeedback">
+              <i class="fas" :class="installFeedback ? 'fa-check' : 'fa-download'"></i>
+              <span>{{ installFeedback ? '已加入队列' : '安装' }}</span>
             </button>
             <button v-else type="button"
               class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-500/30 disabled:opacity-40 transition hover:-translate-y-0.5"
@@ -99,7 +101,7 @@
 </template>
 
 <script setup>
-import { computed, defineProps, defineEmits, useAttrs } from 'vue';
+import { computed, defineProps, defineEmits, useAttrs, ref } from 'vue';
 import { APM_STORE_ARCHITECTURE, APM_STORE_BASE_URL } from '../global/storeConfig';
 
 defineOptions({ inheritAttrs: false });
@@ -135,8 +137,14 @@ const closeModal = () => {
   emit('close');
 };
 
+const installFeedback = ref(false);
+
 const handleInstall = () => {
   emit('install');
+  installFeedback.value = true;
+  setTimeout(() => {
+    installFeedback.value = false;
+  }, 2000);
 };
 
 const handleRemove = () => {
