@@ -9,7 +9,6 @@ import { downloads } from "../global/downloadStatus";
 import { InstallLog, DownloadItem, DownloadResult } from '../global/typedefinition';
 
 let downloadIdCounter = 0;
-const fallbackIcon = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23f0f0f0" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%23999" font-size="14"%3EAPM%3C/text%3E%3C/svg%3E';
 
 export const handleInstall = () => {
   if (!currentApp.value?.Pkgname) return;
@@ -54,16 +53,16 @@ export const handleRetry = (download_: DownloadItem) => {
   window.ipcRenderer.send('queue-install', JSON.stringify(download_));
 };
 
-export const handleUpgrade = (pkgname: string, newVersion = '') => {
-  if (!pkgname) return;
+export const handleUpgrade = (pkg: any) => {
+  if (!pkg.pkgname) return;
 
   downloadIdCounter += 1;
   const download: DownloadItem = {
     id: downloadIdCounter,
-    name: pkgname,
-    pkgname: pkgname,
-    version: newVersion,
-    icon: fallbackIcon,
+    name: pkg.Name,
+    pkgname: pkg.Pkgname,
+    version: pkg.Version,
+    icon: `${APM_STORE_BASE_URL}/${APM_STORE_ARCHITECTURE}/${pkg._category}/${pkg.Pkgname}/icon.png`,
     status: 'queued',
     progress: 0,
     downloadedSize: 0,

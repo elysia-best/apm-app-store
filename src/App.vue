@@ -258,7 +258,8 @@ const toggleAllUpgrades = () => {
 
 const upgradeSingleApp = (app) => {
   if (!app?.pkgname) return;
-  handleUpgrade(app.pkgname, app.newVersion || '');
+  const target = apps.value.find(a => a.Pkgname === app.pkgname);
+  handleUpgrade(target);
 };
 
 const upgradeSelectedApps = () => {
@@ -300,7 +301,8 @@ const refreshInstalledApps = async () => {
 };
 
 const requestUninstall = (app) => {
-  uninstallTargetApp.value = app;
+  const target = apps.value.find(a => a.Pkgname === app.pkgname);
+  uninstallTargetApp.value = target;
   showUninstallModal.value = true;
 };
 
