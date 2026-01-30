@@ -57,4 +57,23 @@
     background-color: #94a3b8;
     border-radius: 9999px;
   }
+
+  .scrollbar-nowidth {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-nowidth::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+  }
+
+  .scrollbar-nowidth::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-nowidth::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 0;
+  }
 }
+
