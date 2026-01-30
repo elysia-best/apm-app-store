@@ -515,6 +515,37 @@ onMounted(async () => {
       closeDetail();
     }
   });
+
+  // Deep link Handlers
+  window.ipcRenderer.on('deep-link-update', () => {
+    openUpdateModal();
+  });
+
+  window.ipcRenderer.on('deep-link-installed', () => {
+    openInstalledModal();
+  });
+
+  window.ipcRenderer.on('deep-link-install', (_event, pkgname) => {
+    const tryOpen = () => {
+      const target = apps.value.find(a => a.Pkgname === pkgname);
+      if (target) {
+        openDetail(target);
+      } else {
+        logger.warn(`Deep link: app ${pkgname} not found`);
+      }
+    };
+
+    if (loading.value) {
+      const stop = watch(loading, (val) => {
+        if (!val) {
+          tryOpen();
+          stop();
+        }
+      });
+    } else {
+      tryOpen();
+    }
+  });
 });
 
 // 观察器
