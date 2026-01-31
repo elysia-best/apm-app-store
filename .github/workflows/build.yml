@@ -82,6 +82,7 @@ jobs:
           elif [ "${{ matrix.architecture }}" == "arm64" ]; then
             curl -fsSL -o ./extras/host-spawn https://github.com/1player/host-spawn/releases/latest/download/host-spawn-aarch64
           fi
+          chmod +x ./extras/host-spawn
 
       - name: Build Release Files
         shell: bash

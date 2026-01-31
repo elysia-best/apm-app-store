@@ -407,7 +407,7 @@ ipcMain.handle('launch-app', async (_event, pkgname: string) => {
     logger.warn('No pkgname provided for launch-app');
   }
 
-  const execCommand = "/opt/apm-store/extras/host-spawn-x86_64";
+  const execCommand = "/opt/apm-store/extras/host-spawn";
   const execParams = ['/opt/apm-store/extras/apm-launcher', 'launch', pkgname ];
 
   logger.info(`Launching app: ${pkgname} with command: ${execCommand} ${execParams.join(' ')}`);
