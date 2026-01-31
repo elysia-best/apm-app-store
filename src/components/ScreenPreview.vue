@@ -3,7 +3,7 @@
     enter-to-class="opacity-100" leave-active-class="duration-150 ease-in"
     leave-from-class="opacity-100" leave-to-class="opacity-0">
     <div v-if="show"
-      class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/80 px-4 py-10 backdrop-blur-md"
+      class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/80 px-4 py-10"
       @click.self="closePreview">
       <div class="relative w-full max-w-5xl">
         <img :src="currentScreenshot" alt="应用截图预览"
