@@ -4,6 +4,8 @@ import readline from 'node:readline';
 import { promisify } from 'node:util';
 import pino from 'pino';
 
+import { InstalledAppInfo } from '../../typedefinition';
+
 const logger = pino({ 'name': 'install-manager' });
 
 type InstallTask = {
@@ -66,7 +68,7 @@ const runCommandCapture = async (execCommand: string, execParams: string[]) => {
 };
 
 const parseInstalledList = (output: string) => {
-  const apps: Array<{ pkgname: string; version: string; arch: string; flags: string; raw: string }> = [];
+  const apps: Array<InstalledAppInfo> = [];
   const lines = output.split('\n');
   for (const line of lines) {
     const trimmed = line.trim();

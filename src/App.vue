@@ -59,7 +59,7 @@ import UninstallConfirmModal from './components/UninstallConfirmModal.vue';
 import { APM_STORE_BASE_URL, currentApp, currentAppIsInstalled } from './global/storeConfig';
 import { downloads } from './global/downloadStatus';
 import { handleInstall, handleRetry, handleUpgrade } from './modeuls/processInstall';
-import type { App, AppJson, DownloadItem } from './global/typedefinition';
+import type { App, AppJson, DownloadItem, UpdateAppItem, InstalledAppInfo } from './global/typedefinition';
 import type { Ref } from 'vue';
 
 const logger = pino();
@@ -267,7 +267,7 @@ const toggleAllUpgrades = () => {
   }));
 };
 
-const upgradeSingleApp = (app: App) => {
+const upgradeSingleApp = (app: UpdateAppItem) => {
   if (!app?.pkgname) return;
   const target = apps.value.find(a => a.pkgname === app.pkgname);
   if (target) {
@@ -275,7 +275,25 @@ const upgradeSingleApp = (app: App) => {
   } else {
     // If we can't find it in the list (e.g. category not loaded?), use the info we have
     // But handleUpgrade expects App. Let's try to construct minimal App
-    handleUpgrade(app);
+    let minimalApp: App = {
+      name: app.pkgname,
+      pkgname: app.pkgname,
+      version: app.newVersion || '',
+      category: 'unknown',
+      tags: '',
+      more: '',
+      filename: '',
+      torrent_address: '',
+      author: '',
+      contributor: '',
+      website: '',
+      update: '',
+      size: '',
+      img_urls: [],
+      icons: '',
+      currentStatus: 'installed'
+    }
+    handleUpgrade(minimalApp);
   }
 };
 
@@ -306,14 +324,38 @@ const refreshInstalledApps = async () => {
       return;
     }
      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    installedApps.value = (result.apps || []).map((app: any) => ({
-      ...app,
-      // Normalize if Main process returns different casing
-      name: app.name || app.Name || app.pkgname,
-      pkgname: app.pkgname || app.Pkgname,
-      version: app.version || app.Version,
-      removing: false
-    }));
+    installedApps.value = []
+    for (const app of result.apps) {
+      let appInfo = apps.value.find(a => a.pkgname === app.pkgname);
+      if (appInfo) {
+        appInfo.flags = app.flags;
+        appInfo.arch = app.arch;
+        appInfo.currentStatus = 'installed';
+      } else {
+        // 如果在当前应用列表中找不到该应用，创建一个最小的 App 对象
+        appInfo = {
+          name: app.name || app.pkgname,
+          pkgname: app.pkgname,
+          version: app.version,
+          category: 'unknown',
+          tags: '',
+          more: '',
+          filename: '',
+          torrent_address: '',
+          author: '',
+          contributor: '',
+          website: '',
+          update: '',
+          size: '',
+          img_urls: [],
+          icons: '',
+          currentStatus: 'installed',
+          arch: app.arch,
+          flags: app.flags
+        };
+      }
+      installedApps.value.push(appInfo);
+    }
   } catch (error: any) {
     installedApps.value = [];
     installedError.value = error?.message || '读取已安装应用失败';
@@ -322,16 +364,9 @@ const refreshInstalledApps = async () => {
   }
 };
 
-const requestUninstall = (app: App | {pkgname: string, [key:string]: any}) => {
+const requestUninstall = (app: App) => {
   let target = null;
-  if (!('pkgname' in app) && 'Pkgname' in app) {
-      // @ts-ignore
-      target = apps.value.find(a => a.pkgname === app.Pkgname);
-  } else if (!app?.pkgname) {
-    // try to find by some other way or failed
-  } else {
-    target = apps.value.find(a => a.pkgname === app.pkgname) || app;
-  }
+  target = apps.value.find(a => a.pkgname === app.pkgname) || app;
   
   if (target) {
     uninstallTargetApp.value = target as App;
@@ -553,6 +588,7 @@ const loadApps = async () => {
           img_urls: typeof appJson.img_urls === 'string' ? JSON.parse(appJson.img_urls) : appJson.img_urls,
           icons: appJson.icons,
           category: category,
+          currentStatus: 'not-installed',
         };
         apps.value.push(normalizedApp);
       });

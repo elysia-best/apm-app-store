@@ -61,9 +61,9 @@
               </div>
               <button type="button"
                 class="inline-flex items-center gap-2 rounded-2xl border border-rose-300/60 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
-                :disabled="app.removing" @click="$emit('uninstall', app)">
+                :disabled="app.currentStatus === 'not-installed'" @click="$emit('uninstall', app)">
                 <i class="fas fa-trash"></i>
-                {{ app.removing ? '卸载中…' : '卸载' }}
+                卸载
               </button>
             </div>
           </div>
@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import type { App } from '@/global/typedefinition';
+import { App } from '../global/typedefinition';
 
 defineProps<{
   show: boolean;

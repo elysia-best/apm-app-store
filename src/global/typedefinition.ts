@@ -86,6 +86,9 @@ export interface App {
     icons: string;
     category: string; // Frontend added
     installed?: boolean; // Frontend state
+    flags?: string; // Tags in apm packages manager, e.g. "automatic" for dependencies
+    arch?: string; // Architecture, e.g. "amd64", "arm64"
+    currentStatus: 'not-installed' | 'installed'; // Current installation status
 }
 
 export interface UpdateAppItem {
@@ -94,4 +97,14 @@ export interface UpdateAppItem {
     newVersion?: string;
     selected?: boolean;
     upgrading?: boolean;
+}
+
+
+/**************Below are type from main process ********************/
+export interface InstalledAppInfo {
+    pkgname: string;
+    version: string;
+    arch: string;
+    flags: string;
+    raw: string;
 }

@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import AppCard from './AppCard.vue';
-import type { App } from '@/global/typedefinition';
+import type { App } from '../global/typedefinition';
 
 defineProps<{
   apps: App[];

@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import type { UpdateAppItem } from '@/global/typedefinition';
+import type { UpdateAppItem } from '../global/typedefinition';
 
 defineProps<{
   show: boolean;

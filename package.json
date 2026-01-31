@@ -23,6 +23,7 @@
   "scripts": {
     "dev": "vite --mode debug | pino-pretty",
     "build": "vue-tsc --noEmit && vite build --mode production && electron-builder --config electron-builder.yml",
+    "build:vite": "vue-tsc --noEmit && vite build --mode production",
     "build:rpm": "vue-tsc --noEmit && vite build --mode production && electron-builder --config electron-builder.yml --linux rpm",
     "build:deb": "vue-tsc --noEmit && vite build --mode production && electron-builder --config electron-builder.yml --linux deb",
     "preview": "vite preview --mode debug"

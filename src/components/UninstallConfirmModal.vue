@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, nextTick, onUnmounted } from 'vue';
-import type { App } from '@/global/typedefinition';
+import type { App } from '../global/typedefinition';
 
 const props = defineProps<{
   show: boolean;
