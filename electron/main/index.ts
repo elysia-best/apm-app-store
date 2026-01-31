@@ -7,6 +7,7 @@ import fs from 'node:fs'
 import pino from 'pino'
 import { handleCommandLine } from './deeplink.js'
 import { isLoaded } from '../global.js'
+import { tasks } from './backend/install-manager.js'
 
 
 // Assure single instance application
@@ -99,8 +100,14 @@ async function createWindow() {
     // 截获 close 默认行为
     event.preventDefault();
     // 点击关闭时触发close事件，我们按照之前的思路在关闭时，隐藏窗口，隐藏任务栏窗口
-    win.hide();
-    win.setSkipTaskbar(true);
+    if (tasks.size > 0) {
+      win.hide();
+      win.setSkipTaskbar(true);
+    } else {
+      // 如果没有下载任务，才允许关闭窗口
+      win.destroy()
+    }
+
   })
 }
 

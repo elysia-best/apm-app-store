@@ -20,7 +20,7 @@ type InstallTask = {
 
 const SHELL_CALLER_PATH = '/opt/apm-store/extras/shell-caller.sh';
 
-const tasks = new Map<number, InstallTask>();
+export const tasks = new Map<number, InstallTask>();
 
 let idle = true; // Indicates if the installation manager is idle
 
