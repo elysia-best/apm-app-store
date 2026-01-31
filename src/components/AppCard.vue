@@ -7,36 +7,36 @@
         :class="['h-full w-full object-cover transition-opacity duration-300', isLoaded ? 'opacity-100' : 'opacity-0']" />
     </div>
     <div class="flex flex-1 flex-col gap-1 overflow-hidden">
-      <div class="truncate text-base font-semibold text-slate-900 dark:text-white">{{ app.Name || '' }}</div>
-      <div class="text-sm text-slate-500 dark:text-slate-400">{{ app.Pkgname || '' }} · {{ app.Version || '' }}</div>
+      <div class="truncate text-base font-semibold text-slate-900 dark:text-white">{{ app.name || '' }}</div>
+      <div class="text-sm text-slate-500 dark:text-slate-400">{{ app.pkgname || '' }} · {{ app.version || '' }}</div>
       <div class="text-sm text-slate-500 dark:text-slate-400">{{ description }}</div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { computed, defineProps, defineEmits, onMounted, onBeforeUnmount, ref, watch } from 'vue';
+<script setup lang="ts">
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { APM_STORE_BASE_URL } from '../global/storeConfig';
+import type { App } from '../global/typedefinition';
 
-const props = defineProps({
-  app: {
-    type: Object,
-    required: true
-  }
-});
+const props = defineProps<{ 
+  app: App
+}>();
 
-const emit = defineEmits(['open-detail']);
+const emit = defineEmits<{
+  (e: 'open-detail', app: App): void
+}>();
 
-const iconImg = ref(null);
+const iconImg = ref<HTMLImageElement | null>(null);
 const isLoaded = ref(false);
 const loadedIcon = ref('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23f0f0f0" width="100" height="100"/%3E%3C/svg%3E');
 
 const iconPath = computed(() => {
-  return `${APM_STORE_BASE_URL}/${window.apm_store.arch}/${props.app._category}/${props.app.Pkgname}/icon.png`;
+  return `${APM_STORE_BASE_URL}/${window.apm_store.arch}/${props.app.category}/${props.app.pkgname}/icon.png`;
 });
 
 const description = computed(() => {
-  const more = props.app.More || '';
+  const more = props.app.more || '';
   return more.substring(0, 80) + (more.length > 80 ? '...' : '');
 });
 
@@ -44,7 +44,7 @@ const openDetail = () => {
   emit('open-detail', props.app);
 };
 
-let observer = null;
+let observer: IntersectionObserver | null = null;
 
 onMounted(() => {
   // 创建 Intersection Observer
@@ -57,13 +57,15 @@ onMounted(() => {
           img.onload = () => {
             loadedIcon.value = iconPath.value;
             isLoaded.value = true;
-            observer.unobserve(entry.target);
+            if (observer)
+              observer.unobserve(entry.target);
           };
           img.onerror = () => {
             // 加载失败时使用默认图标
             loadedIcon.value = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23e0e0e0" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%23999" font-size="14"%3ENo Icon%3C/text%3E%3C/svg%3E';
             isLoaded.value = true;
-            observer.unobserve(entry.target);
+            if (observer)
+              observer.unobserve(entry.target);
           };
           img.src = iconPath.value;
         }

@@ -35,25 +35,20 @@
   </Transition>
 </template>
 
-<script setup>
-import { computed, defineProps, defineEmits } from 'vue';
+<script setup lang="ts">
+import { computed } from 'vue';
 
-const props = defineProps({
-  show: {
-    type: Boolean,
-    required: true
-  },
-  screenshots: {
-    type: Array,
-    required: true
-  },
-  currentScreenIndex: {
-    type: Number,
-    required: true
-  }
-});
+const props = defineProps<{
+  show: boolean;
+  screenshots: string[];
+  currentScreenIndex: number;
+}>();
 
-const emit = defineEmits(['close', 'prev', 'next']);
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'prev'): void;
+  (e: 'next'): void;
+}>();
 
 const currentScreenshot = computed(() => {
   return props.screenshots[props.currentScreenIndex] || '';

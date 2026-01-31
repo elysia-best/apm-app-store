@@ -120,21 +120,23 @@
   </Transition>
 </template>
 
-<script setup>
-import { defineProps, defineEmits } from 'vue';
+<script setup lang="ts">
+import type { DownloadItem } from '../global/typedefinition';
 
-const props = defineProps({
-  show: {
-    type: Boolean,
-    default: false
-  },
-  download: {
-    type: Object,
-    default: null
-  }
-});
+const props = defineProps<{
+  show: boolean;
+  download: DownloadItem | null;
+}>();
 
-const emit = defineEmits(['close', 'pause', 'resume', 'cancel', 'retry', 'open-app']);
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'pause', download: DownloadItem): void;
+  (e: 'resume', download: DownloadItem): void;
+  (e: 'cancel', download: DownloadItem): void;
+  (e: 'retry', download: DownloadItem): void;
+  (e: 'open-app', download: DownloadItem): void;
+}>();
+
 
 const close = () => {
   emit('close');
@@ -157,15 +159,19 @@ const cancel = () => {
 };
 
 const retry = () => {
-  emit('retry', props.download.id);
+  if (props.download) {
+    emit('retry', props.download);
+  }
 };
 
 const openApp = () => {
-  emit('open-app', props.download);
+  if (props.download) {
+    emit('open-app', props.download);
+  }
 };
 
-const getStatusText = (status) => {
-  const statusMap = {
+const getStatusText = (status: string) => {
+  const statusMap: Record<string, string> = {
     'pending': '等待中',
     'downloading': '下载中',
     'installing': '安装中',
@@ -177,29 +183,29 @@ const getStatusText = (status) => {
   return statusMap[status] || status;
 };
 
-const formatSize = (bytes) => {
+const formatSize = (bytes: number) => {
   if (!bytes) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + units[i];
 };
 
-const formatSpeed = (bytesPerSecond) => {
+const formatSpeed = (bytesPerSecond: number) => {
   return formatSize(bytesPerSecond) + '/s';
 };
 
-const formatTime = (seconds) => {
+const formatTime = (seconds: number) => {
   if (seconds < 60) return `${seconds}秒`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}分钟`;
   return `${Math.floor(seconds / 3600)}小时${Math.floor((seconds % 3600) / 60)}分钟`;
 };
 
-const formatDate = (timestamp) => {
+const formatDate = (timestamp: number) => {
   const date = new Date(timestamp);
   return date.toLocaleString('zh-CN');
 };
 
-const formatLogTime = (timestamp) => {
+const formatLogTime = (timestamp: number) => {
   const date = new Date(timestamp);
   return date.toLocaleTimeString('zh-CN');
 };

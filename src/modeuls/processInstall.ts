@@ -6,21 +6,21 @@ import { currentApp, currentAppIsInstalled } from "../global/storeConfig";
 import { APM_STORE_BASE_URL } from "../global/storeConfig";
 import { downloads } from "../global/downloadStatus";
 
-import { InstallLog, DownloadItem, DownloadResult } from '../global/typedefinition';
+import { InstallLog, DownloadItem, DownloadResult, App } from '../global/typedefinition';
 
 let downloadIdCounter = 0;
 
 export const handleInstall = () => {
-  if (!currentApp.value?.Pkgname) return;
+  if (!currentApp.value?.pkgname) return;
 
   downloadIdCounter += 1;
   // 创建下载任务
   const download: DownloadItem = {
     id: downloadIdCounter,
-    name: currentApp.value.Name,
-    pkgname: currentApp.value.Pkgname,
-    version: currentApp.value.Version,
-    icon: `${APM_STORE_BASE_URL}/${window.apm_store.arch}/${currentApp.value._category}/${currentApp.value.Pkgname}/icon.png`,
+    name: currentApp.value.name,
+    pkgname: currentApp.value.pkgname,
+    version: currentApp.value.version,
+    icon: `${APM_STORE_BASE_URL}/${window.apm_store.arch}/${currentApp.value.category}/${currentApp.value.pkgname}/icon.png`,
     status: 'queued',
     progress: 0,
     downloadedSize: 0,
@@ -53,16 +53,16 @@ export const handleRetry = (download_: DownloadItem) => {
   window.ipcRenderer.send('queue-install', JSON.stringify(download_));
 };
 
-export const handleUpgrade = (pkg: any) => {
-  if (!pkg.Pkgname) return;
+export const handleUpgrade = (app: App) => {
+  if (!app.pkgname) return;
 
   downloadIdCounter += 1;
   const download: DownloadItem = {
     id: downloadIdCounter,
-    name: pkg.Name,
-    pkgname: pkg.Pkgname,
-    version: pkg.Version,
-    icon: `${APM_STORE_BASE_URL}/${window.apm_store.arch}/${pkg._category}/${pkg.Pkgname}/icon.png`,
+    name: app.name,
+    pkgname: app.pkgname,
+    version: app.version,
+    icon: `${APM_STORE_BASE_URL}/${window.apm_store.arch}/${app.category}/${app.pkgname}/icon.png`,
     status: 'queued',
     progress: 0,
     downloadedSize: 0,
@@ -83,8 +83,8 @@ export const handleUpgrade = (pkg: any) => {
 };
 
 export const handleRemove = () => {
-  if (!currentApp.value?.Pkgname) return;
-  window.ipcRenderer.send('remove-installed', currentApp.value.Pkgname);
+  if (!currentApp.value?.pkgname) return;
+  window.ipcRenderer.send('remove-installed', currentApp.value.pkgname);
 }
 
 window.ipcRenderer.on('remove-complete', (_event, log: DownloadResult) => {
@@ -97,22 +97,24 @@ window.ipcRenderer.on('remove-complete', (_event, log: DownloadResult) => {
 });
 
 window.ipcRenderer.on('install-status', (_event, log: InstallLog) => {
-    const downloadObj: any = downloads.value.find(d => d.id === log.id);
-    downloadObj.status = log.message;
+    const downloadObj = downloads.value.find(d => d.id === log.id);
+    if(downloadObj) downloadObj.status = log.message as any;
 });
 window.ipcRenderer.on('install-log', (_event, log: InstallLog) => {
-    const downloadObj: any = downloads.value.find(d => d.id === log.id);
-    downloadObj.logs.push({
+    const downloadObj = downloads.value.find(d => d.id === log.id);
+    if(downloadObj) downloadObj.logs.push({
         time: log.time,
         message: log.message
     });
 });
 
 window.ipcRenderer.on('install-complete', (_event, log: DownloadResult) => {
-    const downloadObj: any = downloads.value.find(d => d.id === log.id);
-    if (log.success) {
-        downloadObj.status = 'completed';
-    } else {
-        downloadObj.status = 'failed';
+    const downloadObj = downloads.value.find(d => d.id === log.id);
+    if (downloadObj) {
+      if (log.success) {
+          downloadObj.status = 'completed';
+      } else {
+          downloadObj.status = 'failed';
+      }
     }
 });

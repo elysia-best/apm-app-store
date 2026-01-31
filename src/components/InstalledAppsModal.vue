@@ -73,28 +73,20 @@
   </Transition>
 </template>
 
-<script setup>
-import { defineProps, defineEmits } from 'vue';
+<script setup lang="ts">
+import type { App } from '@/global/typedefinition';
 
-defineProps({
-  show: {
-    type: Boolean,
-    required: true
-  },
-  apps: {
-    type: Array,
-    default: () => []
-  },
-  loading: {
-    type: Boolean,
-    default: false
-  },
-  error: {
-    type: String,
-    default: ''
-  }
-});
+defineProps<{
+  show: boolean;
+  apps: App[];
+  loading: boolean;
+  error: string;
+}>();
 
-defineEmits(['close', 'refresh', 'uninstall']);
+defineEmits<{
+  (e: 'close'): void;
+  (e: 'refresh'): void;
+  (e: 'uninstall', app: App): void;
+}>();
 </script>
 

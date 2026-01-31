@@ -59,7 +59,7 @@
             <div class="flex items-center gap-2">
               <button v-if="download.status === 'failed'" type="button"
                 class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-200/60 text-rose-500 transition hover:bg-rose-50"
-                title="重试" @click.stop="retryDownload(download.id)">
+                title="重试" @click.stop="retryDownload(download)">
                 <i class="fas fa-redo"></i>
               </button>
             </div>
@@ -70,24 +70,23 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, defineProps, defineEmits } from 'vue';
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import type { DownloadItem } from '../global/typedefinition';
 
-const props = defineProps({
-  downloads: {
-    type: Array,
-    default: () => []
-  }
-});
+const props = defineProps<{
+  downloads: DownloadItem[];
+}>();
 
-const emit = defineEmits([
-  'pause',
-  'resume',
-  'cancel',
-  'retry',
-  'clear-completed',
-  'show-detail'
-]);
+const emit = defineEmits<{
+  (e: 'pause', download: DownloadItem): void;
+  (e: 'resume', download: DownloadItem): void;
+  (e: 'cancel', download: DownloadItem): void;
+  (e: 'retry', download: DownloadItem): void;
+  (e: 'clear-completed'): void;
+  (e: 'show-detail', download: DownloadItem): void;
+}>();
+
 
 const isExpanded = ref(false);
 
@@ -101,27 +100,27 @@ const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
 
-const pauseDownload = (id) => {
+const pauseDownload = (id: string) => {
   // emit('pause', id);
 };
 
-const resumeDownload = (id) => {
+const resumeDownload = (id: string) => {
   // emit('resume', id);
 };
 
-const cancelDownload = (id) => {
+const cancelDownload = (id: string) => {
   // emit('cancel', id);
 };
 
-const retryDownload = (id) => {
-  emit('retry', id);
+const retryDownload = (download: DownloadItem) => {
+  emit('retry', download);
 };
 
 const clearCompleted = () => {
   emit('clear-completed');
 };
 
-const showDownloadDetail = (download) => {
+const showDownloadDetail = (download: DownloadItem) => {
   emit('show-detail', download);
 };
 </script>

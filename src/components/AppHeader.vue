@@ -18,28 +18,26 @@
   </div>
 </template>
 
-<script setup>
-import { ref, watch, defineProps, defineEmits } from 'vue';
+<script setup lang="ts">
+import { ref, watch } from 'vue';
 import TopActions from './TopActions.vue';
 
-const props = defineProps({
-  searchQuery: {
-    type: String,
-    required: true
-  },
-  appsCount: {
-    type: Number,
-    required: true
-  }
-});
+const props = defineProps<{
+  searchQuery: string;
+  appsCount: number;
+}>();
 
-const emit = defineEmits(['update-search', 'update', 'list']);
+const emit = defineEmits<{
+  (e: 'update-search', query: string): void;
+  (e: 'update'): void;
+  (e: 'list'): void;
+}>();
 
 const localSearchQuery = ref(props.searchQuery || '');
-const timeoutId = ref(null);
+const timeoutId = ref<ReturnType<typeof setTimeout> | null>(null);
 
 const debounceSearch = () => {
-  clearTimeout(timeoutId.value);
+  if (timeoutId.value) clearTimeout(timeoutId.value);
   timeoutId.value = setTimeout(() => {
     emit('update-search', localSearchQuery.value);
   }, 220);

@@ -15,10 +15,11 @@
   </div>
 </template>
 
-<script setup>
-import { defineEmits } from 'vue';
-
-const emit = defineEmits(['update', 'list']);
+<script setup lang="ts">
+const emit = defineEmits<{
+  (e: 'update'): void;
+  (e: 'list'): void;
+}>();
 
 const handleUpdate = () => {
   emit('update');

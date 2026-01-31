@@ -56,30 +56,28 @@
   </Transition>
 </template>
 
-<script setup>
-import { computed, defineProps, defineEmits, ref, watch, nextTick, onUnmounted } from 'vue';
+<script setup lang="ts">
+import { computed, ref, watch, nextTick, onUnmounted } from 'vue';
+import type { App } from '@/global/typedefinition';
 
-const props = defineProps({
-  show: {
-    type: Boolean,
-    required: true
-  },
-  app: {
-    type: Object,
-    default: null
-  }
-});
+const props = defineProps<{
+  show: boolean;
+  app: App | null;
+}>();
 
-const emit = defineEmits(['close', 'success']);
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'success'): void;
+}>();
 
 const uninstalling = ref(false);
 const completed = ref(false);
-const logs = ref([]);
+const logs = ref<string[]>([]);
 const error = ref('');
-const logEnd = ref(null);
+const logEnd = ref<HTMLElement | null>(null);
 
-const appName = computed(() => props.app?.Name || props.app?.name || '未知应用');
-const appPkg = computed(() => props.app?.Pkgname || props.app?.pkgname || '');
+const appName = computed(() => props.app?.name || '未知应用');
+const appPkg = computed(() => props.app?.pkgname || '');
 
 const handleClose = () => {
   if (uninstalling.value && !completed.value) return; // Prevent closing while uninstalling
@@ -113,7 +111,8 @@ const confirmUninstall = () => {
 };
 
 // Listeners
-const onProgress = (_event, chunk) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const onProgress = (_event: any, chunk: string) => {
   if (!uninstalling.value) return;
   // Split by newline but handle chunks correctly? 
   // For simplicity, just appending lines if chunk contains newlines, or appending to last line?
@@ -124,7 +123,8 @@ const onProgress = (_event, chunk) => {
   scrollToBottom();
 };
 
-const onComplete = (_event, result) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const onComplete = (_event: any, result: { success: boolean; message: any }) => {
   if (!uninstalling.value) return; // Ignore if not current session
   
   const msgObj = typeof result.message === 'string' ? JSON.parse(result.message) : result.message;

@@ -14,10 +14,10 @@
             </div>
             <div class="space-y-1">
               <div class="flex items-center gap-3">
-                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ app?.Name || '' }}</p>
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ app?.name || '' }}</p>
                 <!-- Close button for mobile layout could be considered here if needed, but for now sticking to desktop layout logic mainly -->
               </div>
-              <p class="text-sm text-slate-500 dark:text-slate-400">{{ app?.Pkgname || '' }} · {{ app?.Version || '' }}</p>
+              <p class="text-sm text-slate-500 dark:text-slate-400">{{ app?.pkgname || '' }} · {{ app?.version || '' }}</p>
             </div>
           </div>
           <div class="flex flex-wrap gap-2 lg:ml-auto">
@@ -58,106 +58,98 @@
         </div>
 
         <div class="mt-6 grid gap-4 sm:grid-cols-2">
-          <div v-if="app?.Author" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
+          <div v-if="app?.author" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
             <p class="text-xs uppercase tracking-wide text-slate-400">作者</p>
-            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.Author }}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.author }}</p>
           </div>
-          <div v-if="app?.Contributor" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
+          <div v-if="app?.contributor" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
             <p class="text-xs uppercase tracking-wide text-slate-400">贡献者</p>
-            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.Contributor }}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.contributor }}</p>
           </div>
-          <div v-if="app?.Size" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
+          <div v-if="app?.size" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
             <p class="text-xs uppercase tracking-wide text-slate-400">大小</p>
-            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.Size }}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.size }}</p>
           </div>
-          <div v-if="app?.Update" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
+          <div v-if="app?.update" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
             <p class="text-xs uppercase tracking-wide text-slate-400">更新时间</p>
-            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.Update }}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.update }}</p>
           </div>
-          <div v-if="app?.Website" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
+          <div v-if="app?.website" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
             <p class="text-xs uppercase tracking-wide text-slate-400">网站</p>
-            <a :href="app.Website" target="_blank"
-              class="text-sm font-medium text-brand hover:underline">{{ app.Website }}</a>
+            <a :href="app.website" target="_blank"
+              class="text-sm font-medium text-brand hover:underline">{{ app.website }}</a>
           </div>
-          <div v-if="app?.Version" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
+          <div v-if="app?.version" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
             <p class="text-xs uppercase tracking-wide text-slate-400">版本</p>
-            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.Version }}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.version }}</p>
           </div>
-          <div v-if="app?.Tags" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
+          <div v-if="app?.tags" class="rounded-2xl border border-slate-200/60 p-4 dark:border-slate-800/60">
             <p class="text-xs uppercase tracking-wide text-slate-400">标签</p>
-            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.Tags }}</p>
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ app.tags }}</p>
           </div>
         </div>
 
-        <div v-if="app?.More && app.More.trim() !== ''" class="mt-6 space-y-3">
+        <div v-if="app?.more && app.more.trim() !== ''" class="mt-6 space-y-3">
           <h3 class="text-lg font-semibold text-slate-900 dark:text-white">应用详情</h3>
           <div
             class="max-h-60 space-y-2 overflow-y-auto rounded-2xl border border-slate-200/60 bg-slate-50/80 p-4 text-sm leading-relaxed text-slate-600 dark:border-slate-800/60 dark:bg-slate-900/60 dark:text-slate-300"
-            v-html="app.More.replace(/\n/g, '<br>')"></div>
+            v-html="app.more.replace(/\n/g, '<br>')"></div>
         </div>
       </div>
     </div>
   </Transition>
 </template>
 
-<script setup>
-import { computed, defineProps, defineEmits, useAttrs, ref } from 'vue';
+<script setup lang="ts">
+import { computed, ref, useAttrs } from 'vue';
 import { APM_STORE_BASE_URL } from '../global/storeConfig';
-
-defineOptions({ inheritAttrs: false });
+import type { App } from '../global/typedefinition';
 
 const attrs = useAttrs();
 
-const props = defineProps({
-  show: {
-    type: Boolean,
-    required: true
-  },
-  app: {
-    type: Object,
-    default: null
-  },
-  screenshots: {
-    type: Array,
-    required: true
-  },
-  isinstalled: {
-    type: Boolean,
-    required: true 
-  }
-});
+const props = defineProps<{
+  show: boolean;
+  app: App | null;
+  screenshots: string[];
+  isinstalled: boolean;
+}>();
 
-const emit = defineEmits(['close', 'install', 'remove', 'open-preview']);
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'install'): void;
+  (e: 'remove'): void;
+  (e: 'open-preview', index: number): void;
+}>();
+
+
+const installFeedback = ref(false);
 
 const iconPath = computed(() => {
-  return props.app ? `${APM_STORE_BASE_URL}/${window.apm_store.arch}/${props.app._category}/${props.app.Pkgname}/icon.png` : '';
+  if (!props.app) return '';
+  return `${APM_STORE_BASE_URL}/${window.apm_store.arch}/${props.app.category}/${props.app.pkgname}/icon.png`;
 });
 
 const closeModal = () => {
   emit('close');
 };
 
-const installFeedback = ref(false);
-
 const handleInstall = () => {
-  emit('install');
   installFeedback.value = true;
+  emit('install');
   setTimeout(() => {
     installFeedback.value = false;
   }, 2000);
 };
 
 const handleRemove = () => {
-  emit('remove');
-};
+    emit('remove');
+}
 
-const openPreview = (index) => {
+const openPreview = (index: number) => {
   emit('open-preview', index);
 };
 
-const hideImage = (event) => {
-  if (event?.target) {
-    event.target.style.display = 'none';
-  }
+const hideImage = (e: Event) => {
+  (e.target as HTMLElement).style.display = 'none';
 };
 </script>

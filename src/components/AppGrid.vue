@@ -14,20 +14,16 @@
   </div>
 </template>
 
-<script setup>
-import { defineProps, defineEmits } from 'vue';
+<script setup lang="ts">
 import AppCard from './AppCard.vue';
+import type { App } from '@/global/typedefinition';
 
-defineProps({
-  apps: {
-    type: Array,
-    required: true
-  },
-  loading: {
-    type: Boolean,
-    required: true
-  }
-});
+defineProps<{
+  apps: App[];
+  loading: boolean;
+}>();
 
-defineEmits(['open-detail']);
+defineEmits<{
+  (e: 'open-detail', app: App): void;
+}>();
 </script>

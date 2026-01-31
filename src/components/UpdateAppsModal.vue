@@ -79,32 +79,23 @@
   </Transition>
 </template>
 
-<script setup>
-import { defineProps, defineEmits } from 'vue';
+<script setup lang="ts">
+import type { UpdateAppItem } from '@/global/typedefinition';
 
-defineProps({
-  show: {
-    type: Boolean,
-    required: true
-  },
-  apps: {
-    type: Array,
-    default: () => []
-  },
-  loading: {
-    type: Boolean,
-    default: false
-  },
-  error: {
-    type: String,
-    default: ''
-  },
-  hasSelected: {
-    type: Boolean,
-    default: false
-  }
-});
+defineProps<{
+  show: boolean;
+  apps: UpdateAppItem[];
+  loading: boolean;
+  error: string;
+  hasSelected: boolean;
+}>();
 
-defineEmits(['close', 'refresh', 'toggle-all', 'upgrade-selected', 'upgrade-one']);
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'refresh'): void;
+  (e: 'toggle-all'): void;
+  (e: 'upgrade-selected'): void;
+  (e: 'upgrade-one', app: UpdateAppItem): void;
+}>();
 </script>
 

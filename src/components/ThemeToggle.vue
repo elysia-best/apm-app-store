@@ -12,17 +12,14 @@
   </button>
 </template>
 
-<script setup>
-import { defineProps, defineEmits } from 'vue';
+<script setup lang="ts">
+defineProps<{
+  isDark: boolean;
+}>();
 
-defineProps({
-  isDark: {
-    type: Boolean,
-    required: true
-  }
-});
-
-const emit = defineEmits(['toggle']);
+const emit = defineEmits<{
+  (e: 'toggle'): void;
+}>();
 
 const toggle = () => {
   emit('toggle');

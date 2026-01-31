@@ -33,37 +33,28 @@
   </div>
 </template>
 
-<script setup>
-import { defineProps, defineEmits } from 'vue';
+<script setup lang="ts">
 import ThemeToggle from './ThemeToggle.vue';
 import amberLogo from '../assets/imgs/amber-pm-logo.png';
 
-defineProps({
-  categories: {
-    type: Object,
-    required: true
-  },
-  activeCategory: {
-    type: String,
-    required: true
-  },
-  categoryCounts: {
-    type: Object,
-    required: true
-  },
-  isDarkTheme: {
-    type: Boolean,
-    required: true
-  }
-});
+defineProps<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  categories: Record<string, any>;
+  activeCategory: string;
+  categoryCounts: Record<string, number>;
+  isDarkTheme: boolean;
+}>();
 
-const emit = defineEmits(['toggle-theme', 'select-category']);
+const emit = defineEmits<{
+  (e: 'toggle-theme'): void;
+  (e: 'select-category', category: string): void;
+}>();
 
 const toggleTheme = () => {
   emit('toggle-theme');
 };
 
-const selectCategory = (category) => {
+const selectCategory = (category: string) => {
   emit('select-category', category);
 };
 </script>

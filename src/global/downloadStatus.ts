@@ -1,4 +1,4 @@
 import { ref } from "vue";
-import { DownloadItem } from './typedefinition';
+import type { DownloadItem } from './typedefinition';
 
-export const downloads = ref(<DownloadItem[]>[]);
+export const downloads = ref<DownloadItem[]>([]);
