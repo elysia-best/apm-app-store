@@ -53,11 +53,8 @@ function launch_app() {
     exec_cmd=$(grep -m1 '^Exec=' "$desktop_path" | cut -d= -f2- | sed 's/%[fFuUdDnNickvm]*//g; s/^[[:space:]]*//; s/[[:space:]]*$//')
     [ -z "$exec_cmd" ] && return 1
 
-    # ACE 环境内使用 host-spawn 在宿主显示图形界面
-    [ -n "$IS_ACE_ENV" ] && exec_cmd="host-spawn $exec_cmd"
-
     log.info "Launching: $exec_cmd"
-    ${SHELL:-bash} -c "$exec_cmd" &
+    ${SHELL:-bash} -i -c "$exec_cmd" &
 }
 
 # 导出函数供 ACE 环境调用

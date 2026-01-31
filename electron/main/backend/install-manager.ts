@@ -5,11 +5,13 @@ import { promisify } from 'node:util';
 import pino from 'pino';
 
 import { InstalledAppInfo } from '../../typedefinition';
+import { lookup } from 'node:dns';
 
 const logger = pino({ 'name': 'install-manager' });
 
 type InstallTask = {
   id: number;
+  pkgname: string;
   execCommand: string;
   execParams: string[];
   process: ChildProcess | null;
@@ -147,6 +149,17 @@ ipcMain.on('queue-install', async (event, download_json) => {
     return;
   }
 
+  tasks.forEach((task) => {
+    if (task.pkgname === pkgname) {
+      task.webContents?.send('install-log', {
+        id: task.id,
+        time: Date.now(),
+        message: `软件包 ${pkgname} 已在安装队列中，忽略重复添加`
+      });
+      return;
+    }
+  });
+
   const webContents = event.sender;
 
   // 开始组装安装命令
@@ -163,6 +176,7 @@ ipcMain.on('queue-install', async (event, download_json) => {
 
   const task: InstallTask = {
     id,
+    pkgname,
     execCommand,
     execParams,
     process: null,
@@ -405,8 +419,15 @@ ipcMain.handle('launch-app', async (_event, pkgname: string) => {
     logger.warn('No pkgname provided for launch-app');
   }
 
-  const execCommand = 'dbus-launch';
-  const execParams = ['/opt/apm-store/extras/apm-launcher', 'start', pkgname];
+  const execCommand = '/opt/apm-store/extras/apm-launcher';
+  const execParams = [ 'launch', pkgname ];
 
-  await runCommandCapture(execCommand, execParams);
+  logger.info(`Launching app: ${pkgname} with command: ${execCommand} ${execParams.join(' ')}`);
+
+  spawn(execCommand, execParams, {
+    shell: false,
+    env: process.env,
+    detached: true,
+    stdio: 'ignore'
+  }).unref();
 });
