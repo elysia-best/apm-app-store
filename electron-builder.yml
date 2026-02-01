@@ -20,8 +20,8 @@ linux:
   executableName: "apm-store"
   desktop:
     entry:
-      Name: "APM AppStore"
-      Name[zh_CN]: "APM 应用商店"
+      Name: "APM Store"
+      Name[zh_CN]: "APM 琥珀应用商店"
       Type: "Application"
       Categories: "System;"
   mimeTypes:
