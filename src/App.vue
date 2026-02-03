@@ -57,11 +57,10 @@ import InstalledAppsModal from './components/InstalledAppsModal.vue';
 import UpdateAppsModal from './components/UpdateAppsModal.vue';
 import UninstallConfirmModal from './components/UninstallConfirmModal.vue';
 import { APM_STORE_BASE_URL, currentApp, currentAppIsInstalled } from './global/storeConfig';
-import { downloads } from './global/downloadStatus';
+import { downloads, removeDownloadItem, watchDownloadsChange } from './global/downloadStatus';
 import { handleInstall, handleRetry, handleUpgrade } from './modeuls/processInstall';
-import type { App, AppJson, DownloadItem, UpdateAppItem, InstalledAppInfo } from './global/typedefinition';
+import type { App, AppJson, DownloadItem, UpdateAppItem, InstalledAppInfo, ChannelPayload } from './global/typedefinition';
 import type { Ref } from 'vue';
-
 const logger = pino();
 
 // Axios 全局配置
@@ -167,7 +166,7 @@ const openDetail = (app: App) => {
   });
 };
 
-const checkAppInstalled = (app: App) => { 
+const checkAppInstalled = (app: App) => {
   window.ipcRenderer.invoke('check-installed', app.pkgname).then((isInstalled: boolean) => {
     currentAppIsInstalled.value = isInstalled;
   });
@@ -242,7 +241,7 @@ const refreshUpgradableApps = async () => {
     upgradableApps.value = (result.apps || []).map((app: any) => ({
       ...app,
       // Map properties if needed or assume main matches App interface except field names might differ
-      // For now assuming result.apps returns objects compatible with App for core fields, 
+      // For now assuming result.apps returns objects compatible with App for core fields,
       // but let's normalize just in case if main returns different structure.
       name: app.name || app.Name || '',
       pkgname: app.pkgname || app.Pkgname || '',
@@ -367,10 +366,12 @@ const refreshInstalledApps = async () => {
 const requestUninstall = (app: App) => {
   let target = null;
   target = apps.value.find(a => a.pkgname === app.pkgname) || app;
-  
+
   if (target) {
     uninstallTargetApp.value = target as App;
     showUninstallModal.value = true;
+    // TODO: 挪到卸载完成ipc回调里面
+    removeDownloadItem(app.pkgname);
   }
 };
 
@@ -395,6 +396,14 @@ const onUninstallSuccess = () => {
     checkAppInstalled(currentApp.value);
   }
 };
+
+const installCompleteCallback = () => {
+   if (currentApp.value) {
+    checkAppInstalled(currentApp.value);
+  }
+}
+
+watchDownloadsChange(installCompleteCallback);
 
 const uninstallInstalledApp = (app: App) => {
   requestUninstall(app);
@@ -651,7 +660,7 @@ onMounted(async () => {
     }
   });
 
-  window.ipcRenderer.on('deep-link-install', (_event: any, pkgname: string) => {
+  window.ipcRenderer.on('deep-link-install', (_event: Electron.IpcRendererEvent, pkgname: string) => {
     const tryOpen = () => {
       const target = apps.value.find(a => a.pkgname === pkgname);
       if (target) {
@@ -672,6 +681,14 @@ onMounted(async () => {
       tryOpen();
     }
   });
+
+  window.ipcRenderer.on('remove-complete', (_event: Electron.IpcRendererEvent, payload: ChannelPayload) => {
+    const pkgname = currentApp.value?.pkgname
+    if(payload.success && pkgname){
+      removeDownloadItem(pkgname);
+    }
+  });
+
 
   window.ipcRenderer.send('renderer-ready', { status: true });
   logger.info('Renderer process is ready!');

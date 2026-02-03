@@ -11,13 +11,15 @@ export interface DownloadResult extends InstallLog {
     exitCode: number | null;
 }
 
+export type DownloadItemStatus = 'downloading' | 'installing' | 'paused' | 'completed' | 'failed' | 'queued'; // 可根据实际状态扩展
+
 export interface DownloadItem {
     id: number;                     
     name: string;
     pkgname: string;
     version: string;
     icon: string;
-    status: 'downloading' | 'installing' | 'paused' | 'completed' | 'failed' | 'queued'; // 可根据实际状态扩展
+    status: DownloadItemStatus;
     progress: number;               // 0 ~ 100 的百分比，或 0 ~ 1 的小数（建议统一）
     downloadedSize: number;         // 已下载字节数
     totalSize: number;              // 总字节数（可能为 0 初始时）
@@ -108,3 +110,12 @@ export interface InstalledAppInfo {
     flags: string;
     raw: string;
 }
+
+/**
+ * ipcSender传递的信息
+ */
+export type ChannelPayload = {
+    success: boolean;
+    message: string;
+    [k: string]: unknown;
+};

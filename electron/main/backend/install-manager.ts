@@ -4,7 +4,7 @@ import readline from 'node:readline';
 import { promisify } from 'node:util';
 import pino from 'pino';
 
-import { InstalledAppInfo } from '../../typedefinition';
+import { ChannelPayload, InstalledAppInfo } from '../../typedefinition';
 
 const logger = pino({ 'name': 'install-manager' });
 
@@ -333,7 +333,7 @@ ipcMain.on('remove-installed', async (_event, pkgname: string) => {
       time: Date.now(),
       exitCode: code,
       message: JSON.stringify(messageJSONObj)
-    });
+    } satisfies ChannelPayload);
   });
 });
 

@@ -25,9 +25,9 @@
               class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r px-4 py-2 text-sm font-semibold text-white shadow-lg disabled:opacity-40 transition hover:-translate-y-0.5"
               :class="installFeedback ? 'from-emerald-500 to-emerald-600' : 'from-brand to-brand-dark'"
               @click="handleInstall"
-              :disabled="installFeedback">
+              :disabled="installFeedback || isCompleted">
               <i class="fas" :class="installFeedback ? 'fa-check' : 'fa-download'"></i>
-              <span>{{ installFeedback ? '已加入队列' : '安装' }}</span>
+              <span>{{ installBtnText }}</span>
             </button>
             <template v-else>
               <button type="button"
@@ -109,7 +109,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useAttrs } from 'vue';
+import { computed,useAttrs } from 'vue';
+import { useDownloadItemStatus,useInstallFeedback } from '../global/downloadStatus';
 import { APM_STORE_BASE_URL } from '../global/storeConfig';
 import type { App } from '../global/typedefinition';
 
@@ -131,8 +132,16 @@ const emit = defineEmits<{
 }>();
 
 
-const installFeedback = ref(false);
-
+const appPkgname = computed(() => props.app?.pkgname);
+const { installFeedback } = useInstallFeedback(appPkgname);
+const { isCompleted } = useDownloadItemStatus(appPkgname);
+const installBtnText = computed(() => {
+  if (isCompleted.value) {
+  // TODO: 似乎有一个时间差，安装好了之后并不是立马就可以从已安装列表看见
+    return "已安装";
+  }
+  return installFeedback.value ? "已加入队列" : "安装";
+});
 const iconPath = computed(() => {
   if (!props.app) return '';
   return `${APM_STORE_BASE_URL}/${window.apm_store.arch}/${props.app.category}/${props.app.pkgname}/icon.png`;
@@ -143,11 +152,7 @@ const closeModal = () => {
 };
 
 const handleInstall = () => {
-  installFeedback.value = true;
   emit('install');
-  setTimeout(() => {
-    installFeedback.value = false;
-  }, 2000);
 };
 
 const handleRemove = () => {
