@@ -13,7 +13,7 @@
 
 "关联实体" 是指，对"本许可证"下的行为方而言，控制、受控制或与其共同受控制的机构，此处的控制是指有受控方或共同受控方至少50%直接或间接的投票权、资金或其他有价证券。
 
-##　1. 授予版权许可
+## 1. 授予版权许可
 每个"贡献者"根据"本许可证"授予您永久性的、全球性的、免费的、非独占的、不可撤销的版权许可，您可以复制、使用、修改、分发其"贡献"，不论修改与否。
 
 ## 2. 授予专利许可
@@ -38,8 +38,11 @@
 如果您希望将木兰宽松许可证，第2版，应用到您的新软件，为了方便接收者查阅，建议您完成如下三步：
 
 1， 请您补充如下声明中的空白，包括软件名、软件的首次发表年份以及您作为版权人的名字；
+
 2， 请您在软件包的一级目录下创建以"LICENSE"为名的文件，将整个许可证文本放入该文件中；
+
 3， 请将如下声明文本放入每个源文件的头部注释中。
+
 Copyright (c) 2026-present The Spark Project Contributors
 
 apm-store is licensed under Mulan PSL v2.
@@ -100,8 +103,11 @@ How to Apply the Mulan Permissive Software License，Version 2 (Mulan PSL v2) to
 To apply the Mulan PSL v2 to your work, for easy identification by recipients, you are suggested to complete following three steps:
 
 i. Fill in the blanks in following statement, including insert your software name, the year of the first publication of your software, and your name identified as the copyright owner;
+
 ii. Create a file named "LICENSE" which contains the whole context of this License in the first directory of your software package;
+
 iii. Attach the statement to the appropriate annotated syntax at the beginning of each source file.
+
 Copyright (c) 2026-present The Spark Project Contributors
 
 apm-store is licensed under Mulan PSL v2.
