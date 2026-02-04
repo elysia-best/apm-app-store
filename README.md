@@ -190,7 +190,7 @@ apm-app-store/
 
 ## 📄 开源协议
 
-本项目采用 [MIT](LICENSE) 协议开源。
+本项目采用 [MulanPSL-2.0](LICENSE) 协议开源。
 
 ---
 

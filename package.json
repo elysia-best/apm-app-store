@@ -4,7 +4,7 @@
   "main": "dist-electron/main/index.js",
   "description": "Client for APM App Store",
   "author": "elysia-best <elysia-best@simplelinux.cn.eu.org>",
-  "license": "MIT",
+  "license": "MulanPSL-2.0",
   "private": true,
   "keywords": [
     "electron",
