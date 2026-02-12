@@ -133,7 +133,7 @@ import {
   handleInstall,
   handleRetry,
   handleUpgrade,
-} from "./modeuls/processInstall";
+} from "./modules/processInstall";
 import type {
   App,
   AppJson,
