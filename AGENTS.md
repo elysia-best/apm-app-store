@@ -725,6 +725,7 @@ export const watchDownloadsChange = (callback: () => void) => {
 ### Code Style
 
 - **Use TypeScript strict mode** - no `any` types without `eslint-disable`
+- **Avoid used of eslint-disable directly** - use `undefined` instead if you really do not know its type.
 - **Prefer Composition API** - `<script setup lang="ts">`
 - **Use arrow functions** for methods in setup
 - **Destructure imports** - `import { ref } from 'vue'`
@@ -744,7 +745,7 @@ fix(ui): correct dark mode toggle persistence
 refactor(ipc): simplify install manager event handling
 docs(readme): update build instructions
 ```
-
+Add sign off to the commit is recommended.
 ---
 
 ## 🔗 Related Resources

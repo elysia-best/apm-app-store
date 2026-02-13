@@ -203,6 +203,7 @@ import { computed, useAttrs } from "vue";
 import {
   useDownloadItemStatus,
   useInstallFeedback,
+  downloads,
 } from "../global/downloadStatus";
 import { APM_STORE_BASE_URL } from "../global/storeConfig";
 import type { App } from "../global/typedefinition";
@@ -225,6 +226,11 @@ const emit = defineEmits<{
 }>();
 
 const appPkgname = computed(() => props.app?.pkgname);
+
+const activeDownload = computed(() => {
+  return downloads.value.find((d) => d.pkgname === props.app?.pkgname);
+});
+
 const { installFeedback } = useInstallFeedback(appPkgname);
 const { isCompleted } = useDownloadItemStatus(appPkgname);
 const installBtnText = computed(() => {
@@ -232,7 +238,17 @@ const installBtnText = computed(() => {
     // TODO: 似乎有一个时间差，安装好了之后并不是立马就可以从已安装列表看见
     return "已安装";
   }
-  return installFeedback.value ? "已加入队列" : "安装";
+  if (installFeedback.value) {
+    const status = activeDownload.value?.status;
+    if (status === "downloading") {
+      return `下载中 ${(activeDownload.value?.progress || 0) * 100}%`;
+    }
+    if (status === "installing") {
+      return "安装中...";
+    }
+    return "已加入队列";
+  }
+  return "安装";
 });
 const iconPath = computed(() => {
   if (!props.app) return "";

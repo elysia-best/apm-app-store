@@ -563,7 +563,9 @@ const cancelDownload = (id: DownloadItem) => {
   const index = downloads.value.findIndex((d) => d.id === id.id);
   if (index !== -1) {
     const download = downloads.value[index];
-    // download.status = 'cancelled'; // 'cancelled' not in DownloadItem type union? Check type
+    // 发送到主进程取消
+    window.ipcRenderer.send("cancel-install", download.id);
+
     download.status = "failed"; // Use 'failed' or add 'cancelled' to type if needed. User asked to keep type simple.
     download.logs.push({
       time: Date.now(),
@@ -572,7 +574,10 @@ const cancelDownload = (id: DownloadItem) => {
     // 延迟删除，让用户看到取消状态
     setTimeout(() => {
       logger.info(`删除下载: ${download.pkgname}`);
-      downloads.value.splice(index, 1);
+      // Remove from list only if it's still failed (user didn't retry immediately)
+      // Check index again
+      const idx = downloads.value.findIndex((d) => d.id === id.id);
+      if (idx !== -1) downloads.value.splice(idx, 1);
     }, 1000);
   }
 };

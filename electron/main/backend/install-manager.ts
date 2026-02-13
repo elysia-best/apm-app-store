@@ -1,9 +1,12 @@
 import { ipcMain, WebContents } from "electron";
 import { spawn, ChildProcess, exec } from "node:child_process";
 import { promisify } from "node:util";
+import fs from "node:fs";
+import path from "node:path";
 import pino from "pino";
 
 import { ChannelPayload, InstalledAppInfo } from "../../typedefinition";
+import axios from "axios";
 
 const logger = pino({ name: "install-manager" });
 
@@ -12,8 +15,12 @@ type InstallTask = {
   pkgname: string;
   execCommand: string;
   execParams: string[];
-  process: ChildProcess | null;
+  download_process: ChildProcess | null;
+  install_process: ChildProcess | null;
   webContents: WebContents | null;
+  downloadDir?: string; 
+  metalinkUrl?: string; 
+  filename?: string;
 };
 
 const SHELL_CALLER_PATH = "/opt/apm-store/extras/shell-caller.sh";
@@ -131,7 +138,7 @@ const parseUpgradableList = (output: string) => {
 // Listen for download requests from renderer process
 ipcMain.on("queue-install", async (event, download_json) => {
   const download = JSON.parse(download_json);
-  const { id, pkgname } = download || {};
+  const { id, pkgname, metalinkUrl, filename } = download || {};
 
   if (!id || !pkgname) {
     logger.warn("passed arguments missing id or pkgname");
@@ -163,98 +170,224 @@ ipcMain.on("queue-install", async (event, download_json) => {
   const superUserCmd = await checkSuperUserCommand();
   let execCommand = "";
   const execParams = [];
+  const downloadDir = `/tmp/apm-store/download/${pkgname}`;
+
   if (superUserCmd.length > 0) {
     execCommand = superUserCmd;
     execParams.push(SHELL_CALLER_PATH);
   } else {
     execCommand = SHELL_CALLER_PATH;
   }
-  execParams.push("apm", "install", "-y", pkgname);
+
+  if (metalinkUrl && filename) {
+    execParams.push("apm", "ssaudit", `${downloadDir}/${filename}`);
+  } else {
+    execParams.push("apm", "install", "-y", pkgname);
+  }
 
   const task: InstallTask = {
     id,
     pkgname,
     execCommand,
     execParams,
-    process: null,
+    download_process: null,
+    install_process: null,
     webContents,
+    downloadDir,
+    metalinkUrl,
+    filename,
   };
   tasks.set(id, task);
-  if (idle) processNextInQueue(0);
+  if (idle) processNextInQueue();
 });
 
-function processNextInQueue(index: number) {
+// Cancel Handler
+ipcMain.on("cancel-install", (event, id) => {
+  if (tasks.has(id)) {
+    const task = tasks.get(id);
+    if (task) {
+      task.download_process?.kill(); // Kill the download process
+      task.install_process?.kill(); // Kill the install process
+      logger.info(`已取消任务: ${id}`);
+    }
+    // Note: 'close' handler usually handles cleanup
+  }
+});
+
+async function processNextInQueue() {
   if (!idle) return;
 
+  // Always take the first task to ensure sequence
+  const task = Array.from(tasks.values())[0];
+  if (!task) {
+    idle = true;
+    return;
+  }
+
   idle = false;
-  const task = Array.from(tasks.values())[index];
-  const webContents = task.webContents;
-  let stdoutData = "";
-  let stderrData = "";
+  const { webContents, id, downloadDir } = task;
 
-  webContents.send("install-status", {
-    id: task.id,
-    time: Date.now(),
-    message: "installing",
-  });
-  webContents.send("install-log", {
-    id: task.id,
-    time: Date.now(),
-    message: `开始执行: ${task.execCommand} ${task.execParams.join(" ")}`,
-  });
-  logger.info(`启动安装命令: ${task.execCommand} ${task.execParams.join(" ")}`);
-
-  const child = spawn(task.execCommand, task.execParams, {
-    shell: true,
-    env: process.env,
-  });
-  task.process = child;
-
-  // 监听 stdout
-  child.stdout.on("data", (data) => {
-    stdoutData += data.toString();
-    webContents.send("install-log", {
-      id: task.id,
+  const sendLog = (msg: string) => {
+    webContents?.send("install-log", { id, time: Date.now(), message: msg });
+  };
+  const sendStatus = (status: string) => {
+    webContents?.send("install-status", {
+      id,
       time: Date.now(),
-      message: data.toString(),
+      message: status,
     });
-  });
+  };
 
-  // 监听 stderr
-  child.stderr.on("data", (data) => {
-    stderrData += data.toString();
-    webContents.send("install-log", {
-      id: task.id,
-      time: Date.now(),
-      message: data.toString(),
-    });
-  });
-  child.on("close", (code) => {
-    const success = code === 0;
-    // 拼接json消息
-    const messageJSONObj = {
-      message: success ? "安装完成" : `安装失败，退出码 ${code}`,
-      stdout: stdoutData,
-      stderr: stderrData,
-    };
+  try {
+    // 1. Metalink & Aria2c Phase
+    if (task.metalinkUrl) {
+      try {
+        if (!fs.existsSync(downloadDir)) {
+          fs.mkdirSync(downloadDir, { recursive: true });
+        }
+      } catch (err) {
+        logger.error(`无法创建目录 ${downloadDir}: ${err}`);
+        throw err;
+      }
 
-    if (success) {
-      logger.info(messageJSONObj);
-    } else {
-      logger.error(messageJSONObj);
+      const metalinkPath = path.join(downloadDir, `${task.filename}.metalink`);
+
+      sendLog(`正在获取 Metalink 文件: ${task.metalinkUrl}`);
+
+      const response = await axios.get(task.metalinkUrl, {
+        baseURL: "https://erotica.spark-app.store",
+        responseType: "stream",
+      });
+
+      const writer = fs.createWriteStream(metalinkPath);
+      response.data.pipe(writer);
+
+      await new Promise<void>((resolve, reject) => {
+        writer.on("finish", resolve);
+        writer.on("error", reject);
+      });
+
+      sendLog("Metalink 文件下载完成");
+
+      // Aria2c
+      const aria2Args = [
+        `--dir=${downloadDir}`,
+        "--allow-overwrite=true",
+        "--summary-interval=1",
+        "-M",
+        metalinkPath,
+      ];
+
+      sendStatus("downloading");
+      sendLog(`启动下载: aria2c ${aria2Args.join(" ")}`);
+
+      await new Promise<void>((resolve, reject) => {
+        const child = spawn("aria2c", aria2Args);
+        task.download_process = child;
+
+        child.stdout.on("data", (data) => {
+          const str = data.toString();
+          // Match ( 12%) or (12%)
+          const match = str.match(/[0-9]+(\.[0-9]+)?%/g);
+          if (match) {
+            const p = parseFloat(match.at(-1)) / 100;
+            webContents?.send("install-progress", { id, progress: p });
+          }
+        });
+        child.stderr.on("data", (d) => sendLog(`aria2c: ${d}`));
+
+        child.on("close", (code) => {
+          if (code === 0) {
+            webContents?.send("install-progress", { id, progress: 1 });
+            resolve();
+          } else {
+            reject(new Error(`Aria2c exited with code ${code}`));
+          }
+        });
+        child.on("error", reject);
+      });
     }
 
-    webContents.send("install-complete", {
-      id: task.id,
-      success: success,
-      time: Date.now(),
-      exitCode: code,
-      message: JSON.stringify(messageJSONObj),
+    // 2. Install Phase
+    sendStatus("installing");
+
+    const cmdString = `${task.execCommand} ${task.execParams.join(" ")}`;
+    sendLog(`执行安装: ${cmdString}`);
+    logger.info(`启动安装: ${cmdString}`);
+
+    const result = await new Promise<{
+      code: number;
+      stdout: string;
+      stderr: string;
+    }>((resolve, reject) => {
+      const child = spawn(task.execCommand, task.execParams, {
+        shell: true,
+        env: process.env,
+      });
+      task.install_process = child;
+
+      let stdout = "";
+      let stderr = "";
+
+      child.stdout.on("data", (d) => {
+        const s = d.toString();
+        stdout += s;
+        sendLog(s);
+      });
+
+      child.stderr.on("data", (d) => {
+        const s = d.toString();
+        stderr += s;
+        sendLog(s);
+      });
+
+      child.on("close", (code) => {
+        resolve({ code: code ?? -1, stdout, stderr });
+      });
+      child.on("error", (err) => {
+        reject(err);
+      });
     });
-    tasks.delete(task.id);
+
+    // Completion
+    const success = result.code === 0;
+    const msgObj = {
+      message: success ? "安装完成" : `安装失败，退出码 ${result.code}`,
+      stdout: result.stdout,
+      stderr: result.stderr,
+    };
+
+    if (success) logger.info(msgObj);
+    else logger.error(msgObj);
+
+    webContents?.send("install-complete", {
+      id,
+      success,
+      time: Date.now(),
+      exitCode: result.code,
+      message: JSON.stringify(msgObj),
+    });
+  } catch (error) {
+    logger.error(`Task ${id} failed: ${error}`);
+    webContents?.send("install-complete", {
+      id,
+      success: false,
+      time: Date.now(),
+      exitCode: -1,
+      message: JSON.stringify({
+        message: error instanceof Error ? error.message : String(error),
+        stdout: "",
+        stderr: "",
+      }),
+    });
+  } finally {
+    tasks.delete(id);
     idle = true;
-    if (tasks.size > 0) processNextInQueue(0);
-  });
+    // Trigger next
+    if (tasks.size > 0) {
+      processNextInQueue();
+    }
+  }
 }
 
 ipcMain.handle("check-installed", async (_event, pkgname: string) => {

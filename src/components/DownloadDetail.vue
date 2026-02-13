@@ -83,13 +83,13 @@
               <div class="h-2 rounded-full bg-slate-100 dark:bg-slate-800">
                 <div
                   class="h-full rounded-full bg-brand"
-                  :style="{ width: download.progress + '%' }"
+                  :style="{ width: downloadProgress + '%' }"
                 ></div>
               </div>
               <div
                 class="flex flex-wrap items-center justify-between text-sm text-slate-500 dark:text-slate-400"
               >
-                <span>{{ download.progress }}%</span>
+                <span>{{ downloadProgress }}%</span>
                 <span v-if="download.downloadedSize && download.totalSize">
                   {{ formatSize(download.downloadedSize) }} /
                   {{ formatSize(download.totalSize) }}
@@ -171,6 +171,19 @@
 
           <div class="flex flex-wrap justify-end gap-3">
             <button
+              v-if="
+                download.status === 'downloading' ||
+                download.status === 'queued' ||
+                download.status === 'paused'
+              "
+              type="button"
+              class="inline-flex items-center gap-2 rounded-2xl border border-rose-200/60 px-4 py-2 text-sm font-semibold text-rose-500 transition hover:bg-rose-50 dark:border-rose-500/30 dark:text-rose-400 dark:hover:bg-rose-900/20"
+              @click="cancel"
+            >
+              <i class="fas fa-times"></i>
+              取消下载
+            </button>
+            <button
               v-if="download.status === 'failed'"
               type="button"
               class="inline-flex items-center gap-2 rounded-2xl border border-rose-300/60 px-4 py-2 text-sm font-semibold text-rose-500 transition hover:bg-rose-50"
@@ -196,6 +209,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import type { DownloadItem } from "../global/typedefinition";
 
 const props = defineProps<{
@@ -218,6 +232,12 @@ const close = () => {
 
 const handleOverlayClick = () => {
   close();
+};
+
+const cancel = () => {
+  if (props.download) {
+    emit("cancel", props.download);
+  }
 };
 
 const retry = () => {
@@ -286,4 +306,8 @@ const copyLogs = () => {
       prompt("请手动复制日志：", logsText);
     });
 };
+
+const downloadProgress = computed(() => {
+  return props.download ? Math.floor(props.download.progress * 100) : 0;
+});
 </script>

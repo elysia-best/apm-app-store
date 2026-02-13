@@ -44,6 +44,8 @@ export const handleInstall = () => {
     logs: [{ time: Date.now(), message: "开始下载..." }],
     source: "APM Store",
     retry: false,
+    filename: currentApp.value.filename,
+    metalinkUrl: `${window.apm_store.arch}/${currentApp.value.category}/${currentApp.value.pkgname}/${currentApp.value.filename}.metalink`,
   };
 
   downloads.value.push(download);
@@ -114,6 +116,17 @@ window.ipcRenderer.on("install-status", (_event, log: InstallLog) => {
   const downloadObj = downloads.value.find((d) => d.id === log.id);
   if (downloadObj) downloadObj.status = log.message as DownloadItemStatus;
 });
+
+window.ipcRenderer.on(
+  "install-progress",
+  (_event, payload: { id: number; progress: number }) => {
+    const downloadObj = downloads.value.find((d) => d.id === payload.id);
+    if (downloadObj) {
+      downloadObj.progress = payload.progress;
+    }
+  },
+);
+
 window.ipcRenderer.on("install-log", (_event, log: InstallLog) => {
   const downloadObj = downloads.value.find((d) => d.id === log.id);
   if (downloadObj)

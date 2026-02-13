@@ -1,14 +1,18 @@
-export interface InstallLog {
+export interface InstallStatus {
   id: number;
-  success: boolean;
   time: number;
-  exitCode: number | null;
   message: string;
 }
 
-export interface DownloadResult extends InstallLog {
+export interface InstallLog extends InstallStatus {
   success: boolean;
   exitCode: number | null;
+}
+
+export interface DownloadResult extends InstallStatus {
+  success: boolean;
+  exitCode: number | null;
+  status: DownloadItemStatus | null;
 }
 
 export type DownloadItemStatus =
@@ -26,7 +30,7 @@ export interface DownloadItem {
   version: string;
   icon: string;
   status: DownloadItemStatus;
-  progress: number; // 0 ~ 100 的百分比，或 0 ~ 1 的小数（建议统一）
+  progress: number; // 0 ~ 1 的小数
   downloadedSize: number; // 已下载字节数
   totalSize: number; // 总字节数（可能为 0 初始时）
   speed: number; // 当前下载速度，单位如 B/s
@@ -41,6 +45,8 @@ export interface DownloadItem {
   retry: boolean; // 当前是否为重试下载
   upgradeOnly?: boolean; // 是否为仅升级任务
   error?: string;
+  metalinkUrl?: string; // Metalink 下载链接
+  filename?: string; // 文件名
 }
 
 /*

@@ -86,7 +86,7 @@
               </p>
               <p class="text-xs text-slate-500 dark:text-slate-400">
                 <span v-if="download.status === 'downloading'"
-                  >下载中 {{ download.progress }}%</span
+                  >下载中 {{ Math.floor(download.progress * 100) }}%</span
                 >
                 <span v-else-if="download.status === 'installing'"
                   >安装中...</span
@@ -104,7 +104,7 @@
               >
                 <div
                   class="h-full rounded-full bg-brand"
-                  :style="{ width: `${download.progress}%` }"
+                  :style="{ width: `${download.progress * 100}%` }"
                 ></div>
               </div>
             </div>
