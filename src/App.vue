@@ -151,6 +151,7 @@ const axiosInstance = axios.create({
   baseURL: APM_STORE_BASE_URL,
   timeout: 5000, // 增加到 5 秒，避免网络波动导致的超时
 });
+const cacheBuster = (url: string) => `${url}?cb=${Date.now()}`;
 
 // 响应式状态
 const themeMode = ref<"light" | "dark" | "auto">("auto");
@@ -621,7 +622,7 @@ const openDownloadedApp = (pkgname: string) => {
 const loadCategories = async () => {
   try {
     const response = await axiosInstance.get(
-      `/${window.apm_store.arch}/categories.json`,
+      cacheBuster(`/${window.apm_store.arch}/categories.json`),
     );
     categories.value = response.data;
   } catch (error) {
@@ -639,7 +640,7 @@ const loadApps = async () => {
       try {
         logger.info(`加载分类: ${category}`);
         const response = await axiosInstance.get<AppJson[]>(
-          `/${window.apm_store.arch}/${category}/applist.json`,
+          cacheBuster(`/${window.apm_store.arch}/${category}/applist.json`),
         );
 
         const categoryApps = response.status === 200 ? response.data : [];
