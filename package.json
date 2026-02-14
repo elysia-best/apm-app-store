@@ -30,7 +30,7 @@
     "lint": "eslint --ext .ts,.vue src electron",
     "lint:fix": "eslint --ext .ts,.vue src electron --fix",
     "format": "prettier --write \"src/**/*.{ts,vue}\" \"electron/**/*.{ts,vue}\"",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
+    "changelog": "conventional-changelog --skip-unstable -p angular -i CHANGELOG.md -s -r 0"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.51.4",
