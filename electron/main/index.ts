@@ -155,6 +155,13 @@ app.on("activate", () => {
   }
 });
 
+app.on("will-quit", () => {
+  // Clean up temp dir
+  logger.info("Cleaning up temp dir");
+  fs.rmSync("/tmp/apm-store/", { recursive: true, force: true });
+  logger.info("Done, exiting")
+});
+
 // 设置托盘
 // 获取图标路径
 function getIconPath() {
