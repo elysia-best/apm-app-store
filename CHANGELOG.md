@@ -1,3 +1,16 @@
+# [1.1.0-beta.1](https://github.com/elysia-best/apm-app-store/compare/v1.1.0...v1.1.0-beta.1) (2026-02-14)
+
+
+
+# [1.1.0](https://github.com/elysia-best/apm-app-store/compare/v1.1.0-beta.1...v1.1.0) (2026-02-14)
+
+
+### Bug Fixes
+
+* **app:** floor download progress percentage ([ed92145](https://github.com/elysia-best/apm-app-store/commit/ed92145f9145b9190858e1cf4c2a722efe0e2ff0))
+
+
+
 # [1.1.0-beta.1](https://github.com/elysia-best/apm-app-store/compare/v1.0.4...v1.1.0-beta.1) (2026-02-14)
 
 
