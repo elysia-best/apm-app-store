@@ -35,7 +35,7 @@
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.51.4",
     "@eslint/create-config": "^1.11.0",
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "@loongdotjs/electron-builder": "^26.0.12-1",
     "@vitejs/plugin-vue": "^6.0.3",
     "conventional-changelog": "^7.1.1",
