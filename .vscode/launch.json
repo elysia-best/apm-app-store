@@ -25,9 +25,9 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
-      "windows": {
-        "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
-      },
+      // "windows": {
+      //   "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
+      // },
       "runtimeArgs": [
         "--remote-debugging-port=9229",
         "."

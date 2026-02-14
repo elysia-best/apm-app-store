@@ -12,3 +12,5 @@ interface Window {
   ipcRenderer: import("electron").IpcRenderer;
   apm_store: any;
 }
+
+declare const __APP_VERSION__: string;

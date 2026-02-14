@@ -3,7 +3,11 @@
 // })
 import pino from "pino";
 
-import { currentApp, currentAppIsInstalled } from "../global/storeConfig";
+import {
+  APM_STORE_STATS_BASE_URL,
+  currentApp,
+  currentAppIsInstalled,
+} from "../global/storeConfig";
 import { APM_STORE_BASE_URL } from "../global/storeConfig";
 import { downloads } from "../global/downloadStatus";
 
@@ -14,6 +18,7 @@ import {
   App,
   DownloadItemStatus,
 } from "../global/typedefinition";
+import axios from "axios";
 
 let downloadIdCounter = 0;
 const logger = pino({ name: "processInstall.ts" });
@@ -53,10 +58,27 @@ export const handleInstall = () => {
   // Send to main process to start download
   window.ipcRenderer.send("queue-install", JSON.stringify(download));
 
-  // const encodedPkg = encodeURIComponent(currentApp.value.Pkgname);
-  // openApmStoreUrl(`apmstore://install?pkg=${encodedPkg}`, {
-  //   fallbackText: `/usr/bin/apm-installer --install ${currentApp.value.Pkgname}`
-  // });
+  // Send download statistics to server
+  logger.info("发送下载次数统计...");
+  const axiosInstance = axios.create({
+    baseURL: APM_STORE_STATS_BASE_URL,
+    timeout: 5000, // 增加到 5 秒，避免网络波动导致的超时
+  });
+  axiosInstance
+    .post(
+      "/handle_post",
+      {
+        path: `${window.apm_store.arch}/${currentApp.value.category}/${currentApp.value.pkgname}`,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+    .then((response) => {
+      logger.info("下载次数统计已发送，状态:", response.data);
+    });
 };
 
 export const handleRetry = (download_: DownloadItem) => {
@@ -124,7 +146,7 @@ window.ipcRenderer.on(
     if (downloadObj) {
       downloadObj.progress = payload.progress;
     }
-  },
+  }
 );
 
 window.ipcRenderer.on("install-log", (_event, log: InstallLog) => {

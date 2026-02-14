@@ -6,6 +6,7 @@ import {
   shell,
   Tray,
   nativeTheme,
+  session
 } from "electron";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -61,6 +62,7 @@ if (!app.requestSingleInstanceLock()) {
 let win: BrowserWindow | null = null;
 const preload = path.join(__dirname, "../preload/index.mjs");
 const indexHtml = path.join(RENDERER_DIST, "index.html");
+const userAgent = `APM-Store/${JSON.stringify(process.env.npm_package_version)}`
 
 async function createWindow() {
   win = new BrowserWindow({
@@ -129,6 +131,11 @@ ipcMain.on("set-theme-source", (event, theme: "system" | "light" | "dark") => {
 });
 
 app.whenReady().then(() => {
+  // Set User-Agent for client
+  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
+    details.requestHeaders["User-Agent"] = userAgent;
+    callback({ cancel: false, requestHeaders: details.requestHeaders });
+  });
   createWindow();
   handleCommandLine(process.argv);
 });
@@ -159,7 +166,7 @@ app.on("will-quit", () => {
   // Clean up temp dir
   logger.info("Cleaning up temp dir");
   fs.rmSync("/tmp/apm-store/", { recursive: true, force: true });
-  logger.info("Done, exiting")
+  logger.info("Done, exiting");
 });
 
 // 设置托盘

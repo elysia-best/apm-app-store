@@ -18,8 +18,8 @@ type InstallTask = {
   download_process: ChildProcess | null;
   install_process: ChildProcess | null;
   webContents: WebContents | null;
-  downloadDir?: string; 
-  metalinkUrl?: string; 
+  downloadDir?: string;
+  metalinkUrl?: string;
   filename?: string;
 };
 
