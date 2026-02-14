@@ -243,7 +243,7 @@ const installBtnText = computed(() => {
   if (installFeedback.value) {
     const status = activeDownload.value?.status;
     if (status === "downloading") {
-      return `下载中 ${(activeDownload.value?.progress || 0) * 100}%`;
+      return `下载中 ${Math.floor((activeDownload.value?.progress || 0) * 100)}%`;
     }
     if (status === "installing") {
       return "安装中...";
