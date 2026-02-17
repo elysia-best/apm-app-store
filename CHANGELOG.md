@@ -1,3 +1,12 @@
+## [1.1.1](https://github.com/elysia-best/apm-app-store/compare/v1.1.0...v1.1.1) (2026-02-17)
+
+
+### Bug Fixes
+
+* **main:** use app.getVersion() for packaged app ([d45d508](https://github.com/elysia-best/apm-app-store/commit/d45d5082f45d60de69d07998429d6f49c64a7b95))
+
+
+
 # [1.1.0](https://github.com/elysia-best/apm-app-store/compare/v1.1.0-beta.1...v1.1.0) (2026-02-14)
 
 
