@@ -1,20 +1,30 @@
 <template>
   <div class="flex h-full flex-col gap-6">
-    <div class="flex items-center gap-3">
-      <img
-        :src="amberLogo"
-        alt="Amber PM"
-        class="h-11 w-11 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-800"
-      />
-      <div class="flex flex-col">
-        <span
-          class="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400"
-          >APM Store</span
-        >
-        <span class="text-lg font-semibold text-slate-900 dark:text-white"
-          >APM 客户端商店</span
-        >
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <img
+          :src="amberLogo"
+          alt="Amber PM"
+          class="h-11 w-11 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-800"
+        />
+        <div class="flex flex-col">
+          <span
+            class="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400"
+            >APM Store</span
+          >
+          <span class="text-lg font-semibold text-slate-900 dark:text-white"
+            >APM 客户端商店</span
+          >
+        </div>
       </div>
+      <button
+        type="button"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 hover:bg-slate-100 lg:hidden dark:hover:bg-slate-800"
+        @click="$emit('close')"
+        title="关闭侧边栏"
+      >
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
     <ThemeToggle :theme-mode="themeMode" @toggle="toggleTheme" />
@@ -78,6 +88,7 @@ defineProps<{
 const emit = defineEmits<{
   (e: "toggle-theme"): void;
   (e: "select-category", category: string): void;
+  (e: "close"): void;
 }>();
 
 const toggleTheme = () => {

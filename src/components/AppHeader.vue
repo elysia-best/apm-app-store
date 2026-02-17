@@ -1,7 +1,17 @@
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
-      <TopActions @update="$emit('update')" @list="$emit('list')" />
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200/70 bg-white/80 text-slate-500 shadow-sm backdrop-blur transition hover:bg-slate-50 lg:hidden dark:border-slate-800/70 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800"
+          @click="$emit('toggle-sidebar')"
+          title="切换侧边栏"
+        >
+          <i class="fas fa-bars"></i>
+        </button>
+        <TopActions @update="$emit('update')" @list="$emit('list')" />
+      </div>
       <div class="w-full flex-1">
         <label for="searchBox" class="sr-only">搜索应用</label>
         <div class="relative">
@@ -38,6 +48,7 @@ const emit = defineEmits<{
   (e: "update-search", query: string): void;
   (e: "update"): void;
   (e: "list"): void;
+  (e: "toggle-sidebar"): void;
 }>();
 
 const localSearchQuery = ref(props.searchQuery || "");

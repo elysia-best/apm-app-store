@@ -2,8 +2,18 @@
   <div
     class="flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 lg:flex-row"
   >
+    <!-- 移动端侧边栏遮罩 -->
+    <div
+      v-if="isSidebarOpen"
+      class="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
+      @click="isSidebarOpen = false"
+    ></div>
+
     <aside
-      class="w-full border-b border-slate-200/70 bg-white/80 px-5 py-6 backdrop-blur dark:border-slate-800/70 dark:bg-slate-900/70 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-72 lg:flex-col lg:border-b-0 lg:border-r"
+      class="fixed inset-y-0 left-0 z-50 w-72 transform border-r border-slate-200/70 bg-white/95 px-5 py-6 backdrop-blur transition-transform duration-300 ease-in-out dark:border-slate-800/70 dark:bg-slate-900 lg:sticky lg:top-0 lg:flex lg:h-screen lg:translate-x-0 lg:flex-col lg:border-b-0"
+      :class="
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      "
     >
       <AppSidebar
         :categories="categories"
@@ -12,6 +22,7 @@
         :theme-mode="themeMode"
         @toggle-theme="toggleTheme"
         @select-category="selectCategory"
+        @close="isSidebarOpen = false"
       />
     </aside>
 
@@ -23,6 +34,7 @@
         @update-search="handleSearchInput"
         @update="handleUpdate"
         @list="handleList"
+        @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
       />
       <AppGrid
         :apps="filteredApps"
@@ -167,6 +179,7 @@ const categories: Ref<Record<string, string>> = ref({});
 const apps: Ref<App[]> = ref([]);
 const activeCategory = ref("all");
 const searchQuery = ref("");
+const isSidebarOpen = ref(false);
 const showModal = ref(false);
 const showPreview = ref(false);
 const currentScreenIndex = ref(0);
@@ -265,6 +278,7 @@ const toggleTheme = () => {
 const selectCategory = (category: string) => {
   activeCategory.value = category;
   searchQuery.value = "";
+  isSidebarOpen.value = false;
 };
 
 const openDetail = (app: App) => {

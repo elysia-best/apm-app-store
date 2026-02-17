@@ -63,16 +63,16 @@ let win: BrowserWindow | null = null;
 const preload = path.join(__dirname, "../preload/index.mjs");
 const indexHtml = path.join(RENDERER_DIST, "index.html");
 
-// Use app.getVersion() when the app is packaged. 
+// Use app.getVersion() when the app is packaged.
 const getUserAgent = (): string => {
-  const version = app && app.isPackaged
-    ? app.getVersion()
-    : process.env.npm_package_version || "dev";
+  const version =
+    app && app.isPackaged
+      ? app.getVersion()
+      : process.env.npm_package_version || "dev";
   return `APM-Store/${version}`;
 };
 
 logger.info("User Agent: " + getUserAgent());
-
 
 async function createWindow() {
   win = new BrowserWindow({
