@@ -31,10 +31,20 @@
         :search-query="searchQuery"
         :active-category="activeCategory"
         :apps-count="filteredApps.length"
+        :active-downloads-count="activeDownloadsCount"
+        :show-download-queue="showDownloadQueue"
+        :downloads="downloads"
         @update-search="handleSearchInput"
         @update="handleUpdate"
         @list="handleList"
         @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
+        @toggle-downloads="showDownloadQueue = !showDownloadQueue"
+        @pause-download="pauseDownload"
+        @resume-download="resumeDownload"
+        @cancel-download="cancelDownload"
+        @retry-download="retryDownload"
+        @clear-completed="clearCompletedDownloads"
+        @show-detail="showDownloadDetailModalFunc"
       />
       <AppGrid :apps="pagedApps" :loading="loading" @open-detail="openDetail" />
 
@@ -99,16 +109,6 @@
       @next="nextScreen"
     />
 
-    <DownloadQueue
-      :downloads="downloads"
-      @pause="pauseDownload"
-      @resume="resumeDownload"
-      @cancel="cancelDownload"
-      @retry="retryDownload"
-      @clear-completed="clearCompletedDownloads"
-      @show-detail="showDownloadDetailModalFunc"
-    />
-
     <DownloadDetail
       :show="showDownloadDetailModal"
       :download="currentDownload"
@@ -161,7 +161,6 @@ import AppHeader from "./components/AppHeader.vue";
 import AppGrid from "./components/AppGrid.vue";
 import AppDetailModal from "./components/AppDetailModal.vue";
 import ScreenPreview from "./components/ScreenPreview.vue";
-import DownloadQueue from "./components/DownloadQueue.vue";
 import DownloadDetail from "./components/DownloadDetail.vue";
 import InstalledAppsModal from "./components/InstalledAppsModal.vue";
 import UpdateAppsModal from "./components/UpdateAppsModal.vue";
@@ -214,6 +213,7 @@ const apps: Ref<App[]> = ref([]);
 const activeCategory = ref("all");
 const searchQuery = ref("");
 const isSidebarOpen = ref(false);
+const showDownloadQueue = ref(false);
 const currentPage = ref(1);
 const itemsPerPage = 100; // TODO: 每页显示的应用数量，这个之后加到app设置里
 const showModal = ref(false);
@@ -275,6 +275,12 @@ const pagedApps = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   return filteredApps.value.slice(start, end);
+});
+
+const activeDownloadsCount = computed(() => {
+  return downloads.value.filter(
+    (d) => d.status === "downloading" || d.status === "installing",
+  ).length;
 });
 
 const categoryCounts = computed(() => {
@@ -621,7 +627,6 @@ const resumeDownload = (id: DownloadItem) => {
       time: Date.now(),
       message: "继续下载...",
     });
-    // simulateDownload(download); // removed or undefined?
   }
 };
 

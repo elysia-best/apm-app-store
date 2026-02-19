@@ -11,6 +11,33 @@
           <i class="fas fa-bars"></i>
         </button>
         <TopActions @update="$emit('update')" @list="$emit('list')" />
+        <div class="relative">
+          <button
+            type="button"
+            class="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/70 bg-white/80 text-slate-500 shadow-sm transition hover:bg-slate-50 dark:border-slate-800/70 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800"
+            @click="$emit('toggle-downloads')"
+            title="下载列表"
+          >
+            <i class="fas fa-arrow-down"></i>
+            <span
+              v-if="activeDownloadsCount > 0"
+              class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white ring-2 ring-white dark:ring-slate-900"
+            >
+              {{ activeDownloadsCount }}
+            </span>
+          </button>
+          <DownloadQueue
+            :show="showDownloadQueue"
+            :downloads="downloads"
+            @close="$emit('toggle-downloads')"
+            @pause="(d) => $emit('pause-download', d)"
+            @resume="(d) => $emit('resume-download', d)"
+            @cancel="(d) => $emit('cancel-download', d)"
+            @retry="(d) => $emit('retry-download', d)"
+            @clear-completed="$emit('clear-completed')"
+            @show-detail="(d) => $emit('show-detail', d)"
+          />
+        </div>
       </div>
       <div class="w-full flex-1">
         <label for="searchBox" class="sr-only">搜索应用</label>
@@ -37,11 +64,16 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import TopActions from "./TopActions.vue";
+import DownloadQueue from "./DownloadQueue.vue";
+import type { DownloadItem } from "../global/typedefinition";
 
 const props = defineProps<{
   searchQuery: string;
   activeCategory: string;
   appsCount: number;
+  activeDownloadsCount: number;
+  showDownloadQueue: boolean;
+  downloads: DownloadItem[];
 }>();
 
 const emit = defineEmits<{
@@ -49,6 +81,13 @@ const emit = defineEmits<{
   (e: "update"): void;
   (e: "list"): void;
   (e: "toggle-sidebar"): void;
+  (e: "toggle-downloads"): void;
+  (e: "pause-download", download: DownloadItem): void;
+  (e: "resume-download", download: DownloadItem): void;
+  (e: "cancel-download", download: DownloadItem): void;
+  (e: "retry-download", download: DownloadItem): void;
+  (e: "clear-completed"): void;
+  (e: "show-detail", download: DownloadItem): void;
 }>();
 
 const localSearchQuery = ref(props.searchQuery || "");
