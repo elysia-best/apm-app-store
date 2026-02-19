@@ -4,7 +4,7 @@
       <div class="flex items-center gap-3">
         <button
           type="button"
-          class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200/70 bg-white/80 text-slate-500 shadow-sm backdrop-blur transition hover:bg-slate-50 lg:hidden dark:border-slate-800/70 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800"
+          class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200/70 bg-white/80 text-slate-500 shadow-sm transition hover:bg-slate-50 lg:hidden dark:border-slate-800/70 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800"
           @click="$emit('toggle-sidebar')"
           title="切换侧边栏"
         >

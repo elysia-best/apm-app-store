@@ -5,12 +5,12 @@
     <!-- 移动端侧边栏遮罩 -->
     <div
       v-if="isSidebarOpen"
-      class="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
+      class="fixed inset-0 z-40 bg-black/50 lg:hidden"
       @click="isSidebarOpen = false"
     ></div>
 
     <aside
-      class="fixed inset-y-0 left-0 z-50 w-72 transform border-r border-slate-200/70 bg-white/95 px-5 py-6 backdrop-blur transition-transform duration-300 ease-in-out dark:border-slate-800/70 dark:bg-slate-900 lg:sticky lg:top-0 lg:flex lg:h-screen lg:translate-x-0 lg:flex-col lg:border-b-0"
+      class="fixed inset-y-0 left-0 z-50 w-72 transform border-r border-slate-200/70 bg-white/95 px-5 py-6 transition-transform duration-300 ease-in-out dark:border-slate-800/70 dark:bg-slate-900 lg:sticky lg:top-0 lg:flex lg:h-screen lg:translate-x-0 lg:flex-col lg:border-b-0"
       :class="
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       "
