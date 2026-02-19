@@ -670,6 +670,7 @@ const clearCompletedDownloads = () => {
 const showDownloadDetailModalFunc = (download: DownloadItem) => {
   currentDownload.value = download;
   showDownloadDetailModal.value = true;
+  showDownloadQueue.value = false;
 };
 
 const closeDownloadDetail = () => {

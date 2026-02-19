@@ -11,7 +11,7 @@
           <i class="fas fa-bars"></i>
         </button>
         <TopActions @update="$emit('update')" @list="$emit('list')" />
-        <div class="relative">
+        <div class="relative" ref="downloadContainer">
           <button
             type="button"
             class="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/70 bg-white/80 text-slate-500 shadow-sm transition hover:bg-slate-50 dark:border-slate-800/70 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800"
@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import TopActions from "./TopActions.vue";
 import DownloadQueue from "./DownloadQueue.vue";
 import type { DownloadItem } from "../global/typedefinition";
@@ -91,6 +91,25 @@ const emit = defineEmits<{
 }>();
 
 const localSearchQuery = ref(props.searchQuery || "");
+const downloadContainer = ref<HTMLElement | null>(null);
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (
+    props.showDownloadQueue &&
+    downloadContainer.value &&
+    !downloadContainer.value.contains(event.target as Node)
+  ) {
+    emit("toggle-downloads");
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("mousedown", handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("mousedown", handleClickOutside);
+});
 
 const handleSearch = () => {
   emit("update-search", localSearchQuery.value);
