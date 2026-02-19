@@ -36,11 +36,45 @@
         @list="handleList"
         @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
       />
-      <AppGrid
-        :apps="filteredApps"
-        :loading="loading"
-        @open-detail="openDetail"
-      />
+      <AppGrid :apps="pagedApps" :loading="loading" @open-detail="openDetail" />
+
+      <!-- 分页控制 -->
+      <div
+        v-if="!loading && totalPages > 1"
+        class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+      >
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 disabled:opacity-30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
+            :disabled="currentPage === 1"
+            title="上一页"
+            @click="currentPage > 1 && currentPage--"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div
+            class="flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+          >
+            <span>第</span>
+            <span class="text-brand font-bold">{{ currentPage }}</span>
+            <span class="opacity-40">/</span>
+            <span>{{ totalPages }} 页</span>
+          </div>
+          <button
+            type="button"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 disabled:opacity-30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
+            :disabled="currentPage === totalPages"
+            title="下一页"
+            @click="currentPage < totalPages && currentPage++"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="text-xs text-slate-400 dark:text-slate-500">
+          共 {{ filteredApps.length }} 个应用，每页显示 {{ itemsPerPage }} 个
+        </div>
+      </div>
     </main>
 
     <AppDetailModal
@@ -180,6 +214,8 @@ const apps: Ref<App[]> = ref([]);
 const activeCategory = ref("all");
 const searchQuery = ref("");
 const isSidebarOpen = ref(false);
+const currentPage = ref(1);
+const itemsPerPage = 100; // TODO: 每页显示的应用数量，这个之后加到app设置里
 const showModal = ref(false);
 const showPreview = ref(false);
 const currentScreenIndex = ref(0);
@@ -199,6 +235,11 @@ const updateLoading = ref(false);
 const updateError = ref("");
 const showUninstallModal = ref(false);
 const uninstallTargetApp: Ref<App | null> = ref(null);
+
+// 监听页码变化并置顶
+watch(currentPage, () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
 
 // 计算属性
 const filteredApps = computed(() => {
@@ -224,6 +265,16 @@ const filteredApps = computed(() => {
   }
 
   return result;
+});
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredApps.value.length / itemsPerPage);
+});
+
+const pagedApps = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredApps.value.slice(start, end);
 });
 
 const categoryCounts = computed(() => {
@@ -279,6 +330,7 @@ const selectCategory = (category: string) => {
   activeCategory.value = category;
   searchQuery.value = "";
   isSidebarOpen.value = false;
+  currentPage.value = 1;
 };
 
 const openDetail = (app: App) => {
@@ -696,6 +748,7 @@ const loadApps = async () => {
 
 const handleSearchInput = (value: string) => {
   searchQuery.value = value;
+  currentPage.value = 1;
 };
 
 // 生命周期钩子
