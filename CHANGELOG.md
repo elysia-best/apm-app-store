@@ -1,3 +1,27 @@
+# [1.2.0](https://github.com/elysia-best/apm-app-store/compare/v1.1.1...v1.2.0) (2026-02-25)
+
+
+### Bug Fixes
+
+* **AppHeader:** close download queue when clicking outside ([9216b59](https://github.com/elysia-best/apm-app-store/commit/9216b59925fd4126be715f12d6270c7d1695c509))
+
+
+### Features
+
+* add  sidebar toggle functionality ([c27c1f1](https://github.com/elysia-best/apm-app-store/commit/c27c1f1697a6de90197765c491af395ff0fd38b3))
+* **app:** add pagination to app grid ([60cc45e](https://github.com/elysia-best/apm-app-store/commit/60cc45e463dcaaf2af4fe745b83f4a0e0f4c3215))
+* **appgrid:** implement lazy loading with IntersectionObserver ([7ab07f4](https://github.com/elysia-best/apm-app-store/commit/7ab07f47347b470c9dbc8987df87b4bb4c1828c3))
+* **modals:** add close functionality on backdrop click for InstalledAppsModal and UpdateAppsModal ([a6dbdc9](https://github.com/elysia-best/apm-app-store/commit/a6dbdc90614d809d4a25985ee2c49454528fc456))
+* **ui:** redesign download queue with header integration ([f555c6d](https://github.com/elysia-best/apm-app-store/commit/f555c6de3b4dd9784e0873ab547d385eabbf31fb))
+
+
+### Performance Improvements
+
+* **apps:** optimize loading with batch concurrency ([e780d51](https://github.com/elysia-best/apm-app-store/commit/e780d510b909d5ed8ca207354fb83f9d3994c1fb))
+* remove backdrop-blur effects to accelerate animation ([cab4ba8](https://github.com/elysia-best/apm-app-store/commit/cab4ba87536c2a05fde4a77dd8be589175e3d30e))
+
+
+
 ## [1.1.1](https://github.com/elysia-best/apm-app-store/compare/v1.1.0...v1.1.1) (2026-02-17)
 
 
