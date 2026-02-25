@@ -721,6 +721,12 @@ onMounted(async () => {
     if (showModal.value && e.key === "Escape") {
       closeDetail();
     }
+    if (showUpdateModal.value && e.key === "Escape") {
+      closeUpdateModal();
+    }
+    if (showInstalledModal.value && e.key === "Escape") {
+      closeInstalledModal();
+    }
   });
 
   // Deep link Handlers

@@ -10,6 +10,7 @@
     <div
       v-if="show"
       class="fixed inset-0 z-50 flex items-start justify-center px-4 py-10"
+      @click.self="$emit('close')"
     >
       <div
         class="w-full max-w-4xl max-h-[85vh] overflow-y-auto scrollbar-nowidth rounded-3xl border border-white/10 bg-white p-6 shadow-popup dark:border-slate-800 dark:bg-slate-900"
