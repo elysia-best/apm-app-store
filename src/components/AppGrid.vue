@@ -4,11 +4,15 @@
     class="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
   >
     <AppCard
-      v-for="(app, index) in apps"
+      v-for="(app, index) in visibleApps"
       :key="index"
       :app="app"
       @open-detail="$emit('open-detail', app)"
     />
+    <div
+      ref="sentinel"
+      class="col-span-full h-4 w-full opacity-0 pointer-events-none"
+    ></div>
   </div>
   <div
     v-else
@@ -35,10 +39,11 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import AppCard from "./AppCard.vue";
 import type { App } from "../global/typedefinition";
 
-defineProps<{
+const props = defineProps<{
   apps: App[];
   loading: boolean;
 }>();
@@ -46,4 +51,79 @@ defineProps<{
 defineEmits<{
   (e: "open-detail", app: App): void;
 }>();
+
+// 懒加载控制
+const visibleCount = ref(50);
+const visibleApps = computed(() => {
+  return props.apps.slice(0, visibleCount.value);
+});
+
+const sentinel = ref<HTMLElement | null>(null);
+let observer: IntersectionObserver | null = null;
+
+const createObserver = () => {
+  if (observer) {
+    observer.disconnect();
+  }
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !props.loading) {
+          loadMore();
+        }
+      });
+    },
+    {
+      rootMargin: "200px", // 提前加载
+      threshold: 0.1,
+    },
+  );
+
+  if (sentinel.value) {
+    observer.observe(sentinel.value);
+  }
+};
+
+const loadMore = () => {
+  if (visibleCount.value < props.apps.length) {
+    visibleCount.value += 50; // 每次加载 50 个
+  }
+};
+
+// 监听 loading 变化，重新初始化
+watch(
+  () => props.loading,
+  (val) => {
+    if (!val) {
+      nextTick(() => {
+        createObserver();
+      });
+    }
+  },
+);
+
+// 监听 apps 变化，重置 visibleCount
+watch(
+  () => props.apps,
+  () => {
+    visibleCount.value = 50;
+    // 如果当前不 loading，也尝试重新观察
+    if (!props.loading) {
+      nextTick(() => {
+        createObserver();
+      });
+    }
+  },
+);
+
+onMounted(() => {
+  createObserver();
+});
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect();
+  }
+});
 </script>
