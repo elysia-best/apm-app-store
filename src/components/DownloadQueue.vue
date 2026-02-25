@@ -9,7 +9,7 @@
   >
     <div
       v-if="show"
-      class="absolute left-1/2 top-full z-100 mt-2 w-72 -translate-x-1/2 rounded-3xl border border-slate-200/70 bg-white shadow-2xl backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900 sm:w-96"
+      class="absolute left-1/2 top-full z-100 mt-2 w-72 -translate-x-1/2 rounded-3xl border border-slate-200/70 bg-white shadow-popup backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900 sm:w-96"
     >
       <div
         class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800"

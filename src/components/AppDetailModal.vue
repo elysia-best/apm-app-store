@@ -10,11 +10,11 @@
     <div
       v-if="show"
       v-bind="attrs"
-      class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-slate-900/70 p-4"
+      class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden p-4"
       @click.self="closeModal"
     >
       <div
-        class="modal-panel relative w-full max-w-4xl max-h-[85vh] overflow-y-auto scrollbar-nowidth rounded-3xl border border-white/10 bg-white/95 p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+        class="modal-panel relative w-full max-w-4xl max-h-[85vh] overflow-y-auto scrollbar-nowidth rounded-3xl border border-white/10 bg-white p-6 shadow-popup dark:border-slate-800 dark:bg-slate-900"
       >
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
           <div class="flex flex-1 items-center gap-4">

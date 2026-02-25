@@ -9,11 +9,11 @@
   >
     <div
       v-if="show"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
       @click.self="handleClose"
     >
       <div
-        class="relative w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-white/95 p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+        class="relative w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-white p-6 shadow-popup dark:border-slate-800 dark:bg-slate-900"
       >
         <div class="mb-6 flex items-center gap-4">
           <div

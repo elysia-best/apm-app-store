@@ -9,14 +9,14 @@
   >
     <div
       v-if="show"
-      class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/80 px-4 py-10"
+      class="fixed inset-0 z-[60] flex items-center justify-center bg-transparent px-4 py-10"
       @click.self="closePreview"
     >
       <div class="relative w-full max-w-5xl">
         <img
           :src="currentScreenshot"
           alt="应用截图预览"
-          class="max-h-[80vh] w-full rounded-3xl border border-slate-200/40 bg-black/40 object-contain shadow-2xl dark:border-slate-700"
+          class="max-h-[80vh] w-full rounded-3xl border border-slate-200/40 bg-black/40 object-contain shadow-popup dark:border-slate-700"
         />
         <div
           class="absolute inset-x-0 top-4 flex items-center justify-between px-6"

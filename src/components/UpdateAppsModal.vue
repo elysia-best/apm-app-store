@@ -9,10 +9,10 @@
   >
     <div
       v-if="show"
-      class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/70 px-4 py-10"
+      class="fixed inset-0 z-50 flex items-start justify-center px-4 py-10"
     >
       <div
-        class="w-full max-w-4xl max-h-[85vh] overflow-y-auto scrollbar-nowidth rounded-3xl border border-white/10 bg-white/95 p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+        class="w-full max-w-4xl max-h-[85vh] overflow-y-auto scrollbar-nowidth rounded-3xl border border-white/10 bg-white p-6 shadow-popup dark:border-slate-800 dark:bg-slate-900"
       >
         <div class="flex flex-wrap items-center gap-3">
           <div class="flex-1">
