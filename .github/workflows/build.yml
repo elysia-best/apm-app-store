@@ -34,74 +34,50 @@ permissions:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    container: ${{ matrix.docker_image }}
 
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        # package: [deb, rpm]
-        package: [deb]
-        architecture: [x64]
-        docker_image: [debian:12]
-        # include:
-        #   - package: deb
-        #     docker_image: "debian:12"
-        #   - package: rpm
-        #     docker_image: "almalinux:8"
-      
+        include:
+          - package: deb
+            architecture: x64
+            os: ubuntu-latest
+            docker_image: "node:20-bookworm"
+            platform: linux/amd64
+          - package: deb
+            architecture: arm64
+            os: ubuntu-latest
+            docker_image: "node:20-bookworm"
+            platform: linux/arm64
 
     steps:
-      - name: Install Build Dependencies
-        if: matrix.package == 'deb'
-        run: |
-          apt-get update
-          apt-get install -y curl git wget devscripts fakeroot equivs lintian python3
-          apt-get install -y build-essential
-
-      - name: Install Build Dependencies
-        if: matrix.package == 'rpm'
-        run: |
-          dnf install -y curl git wget rpm-build rpmdevtools rpmlint python3
-          dnf group install -y "Development Tools"
-
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 20
+      - name: Set up QEMU
+        if: matrix.architecture == 'arm64'
+        uses: docker/setup-qemu-action@v3
 
-      - name: Install Dependencies
-        run: | 
-          npm install
-
-      - name: Download host-spawn
-        shell: bash
+      - name: Build in Docker
         run: |
-          if [ "${{ matrix.architecture }}" == "x64" ]; then
-            curl -fsSL -o ./extras/host-spawn https://github.com/1player/host-spawn/releases/latest/download/host-spawn-x86_64
-          elif [ "${{ matrix.architecture }}" == "arm64" ]; then
-            curl -fsSL -o ./extras/host-spawn https://github.com/1player/host-spawn/releases/latest/download/host-spawn-aarch64
-          fi
-          chmod +x ./extras/host-spawn
-
-      - name: Build Release Files
-        shell: bash
-        run: |
-          make generate-debian-changelog
-          cp -r ./packaging/deb/debian ./debian
-
-          mk-build-deps -i -r -t "apt-get -y"
-          dpkg-buildpackage -b -us -uc
-          
-          mkdir -p release/${{ matrix.package }}
-          mv ../*.deb release/${{ matrix.package }}/ || true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            docker run --rm --privileged \
+            --platform ${{ matrix.platform }} \
+            -v ${{ github.workspace }}:${{ github.workspace }} \
+            -w ${{ github.workspace }} \
+            ${{ matrix.docker_image }} \
+            /bin/bash -c "apt-get update && apt-get install -y curl git wget devscripts fakeroot equivs lintian python3 build-essential && \
+            npm install && \
+            if [ '${{ matrix.architecture }}' == 'x64' ]; then curl -fsSL -o ./extras/host-spawn https://github.com/1player/host-spawn/releases/latest/download/host-spawn-x86_64; else curl -fsSL -o ./extras/host-spawn https://github.com/1player/host-spawn/releases/latest/download/host-spawn-aarch64; fi && \
+            chmod +x ./extras/host-spawn && \
+            make generate-debian-changelog && \
+            cp -r ./packaging/deb/debian ./debian && \
+            mk-build-deps -i -r -t 'apt-get -y' && \
+            dpkg-buildpackage -b -us -uc && \
+            mkdir -p release/${{ matrix.package }} && \
+            mv ../*.deb release/${{ matrix.package }}/ || true && \
+            chown -R $(id -u):$(id -g) ."
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: release_for_${{ matrix.package }}_${{ matrix.architecture }}
           path: release/**/*.${{ matrix.package }}
