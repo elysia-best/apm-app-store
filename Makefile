@@ -92,7 +92,7 @@ check-deps:
 
 generate-debian-changelog:
 	@echo "$(BLUE)[CHANGELOG]$(NC) Generating debian/changelog from git history..."
-	@bash packaging/deb/generate-changelog.sh >> packaging/deb/debian/changelog
+	@env PACKAGE_JSON=$(CURDIR)/package.json bash packaging/deb/generate-changelog.sh >> packaging/deb/debian/changelog
 
 .PHONY: help
 help:
