@@ -23,7 +23,7 @@ type InstallTask = {
   filename?: string;
 };
 
-const SHELL_CALLER_PATH = "/opt/apm-store/extras/shell-caller.sh";
+const SHELL_CALLER_PATH = "/opt/apm-store/resources/shell-helper/shell-caller.sh";
 
 export const tasks = new Map<number, InstallTask>();
 
@@ -570,8 +570,8 @@ ipcMain.handle("launch-app", async (_event, pkgname: string) => {
     logger.warn("No pkgname provided for launch-app");
   }
 
-  const execCommand = "/opt/apm-store/extras/host-spawn";
-  const execParams = ["/opt/apm-store/extras/apm-launcher", "launch", pkgname];
+  const execCommand = "/opt/apm-store/resources/shell-helper/host-spawn";
+  const execParams = ["/opt/apm-store/resources/shell-helper/apm-launcher", "launch", pkgname];
 
   logger.info(
     `Launching app: ${pkgname} with command: ${execCommand} ${execParams.join(" ")}`,
