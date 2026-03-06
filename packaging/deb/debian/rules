@@ -1,0 +1,32 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+include /usr/share/dpkg/default.mk
+
+DEB_BUILD_ARCH ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE = 1
+
+%:
+	dh $@ --parallel
+
+override_dh_auto_configure:
+	npm install
+
+override_dh_auto_build:
+	make pack-linux-native
+
+override_dh_auto_install:
+	make install DESTDIR=$(CURDIR)/debian/apm-store
+
+override_dh_dwz:
+	:
+
+# Ignore the dpkg-shlibdeps: warning (it uses none of the library's symbols)
+# Qt Multimedia lib will ref to network library.
+# override_dh_shlibdeps:
+# 	dh_shlibdeps --dpkg-shlibdeps-params=--warnings=0 --exclude=opt/durapps/spark-store/bin/ss-feedback/
+# override_dh_strip:
+# 	dh_strip --exclude=opt/durapps/spark-store/bin/ss-feedback/

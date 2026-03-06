@@ -15,20 +15,8 @@ ELECTRON_VER  := $(shell node -p "require('./package.json').devDependencies.elec
 
 # 资源路径
 ICON_LINUX    := icons/amber-pm-logo.png
-EXTRA_RES     := icons extras
-
-
-# 打包选项
-PACK_OPTS     := \
-	--platform=linux \
-	--arch=x64 \
-	--asar \
-	--out=$(OUT_DIR) \
-	--executable-name=$(APP_NAME) \
-	--icon=$(ICON_LINUX) \
-	--prune \
-	$(foreach res,$(EXTRA_RES),--extra-resource=$(res)) \
-	--ignore="^/(?!dist|dist-electron|icons|extras|package\.json|node_modules/electron)"
+# This is for electron, will be installed to <APPDIR>/resources/extras. Used install-extra-resource target instead of this!
+EXTRA_RES     := ""
 
 # 颜色输出（可选，提升可读性）
 BLUE := \033[0;34m
@@ -76,14 +64,22 @@ pack-linux-native: check-deps build-vite
 		$(foreach res,$(EXTRA_RES),--extra-resource=$(res))
 	@echo "$(BLUE)[DONE]$(NC) Output: $(OUT_DIR)/$(APP_NAME)-linux-$(ELECTRON_PACKAGER_ARCH)"
 
-.PHONY: pack-all
-pack-all: pack-linux-native
-
 # ==================== 安装目标 ====================
+install_extra_resource:
+	@echo "$(BLUE)[INSTALL]$(NC) Copying extra resources to $(DESTDIR)/opt/$(APP_NAME)/resources/extras"
+	mkdir -p $(DESTDIR)/opt/$(APP_NAME)/resources/
+	cp -r extras/shell-helper $(DESTDIR)/opt/$(APP_NAME)/resources/shell-helper
+	cp -r icons $(DESTDIR)/opt/$(APP_NAME)/resources/icons
+
+	# Install polkit policy file
+	mkdir -p $(DESTDIR)/usr/share/polkit-1/actions/
+	cp -r extras/policy/store.spark-app.amber-pm-store.policy $(DESTDIR)/usr/share/polkit-1/actions/
+
 .PHONY: install
-install: pack-linux-native
+install: install_extra_resource
 	@echo "$(BLUE)[INSTALL]$(NC) Installing $(APP_NAME) to DESTDIR"
-	cp -r $(DIST_DIR)/ $(DESTDIR)/opt/$(APP_NAME)
+	mkdir -p $(DESTDIR)/opt/$(APP_NAME)
+	cp -r $(DIST_DIR)/* $(DESTDIR)/opt/$(APP_NAME)
 # ==================== 辅助目标 ====================
 .PHONY: clean
 clean:
@@ -97,21 +93,17 @@ check-deps:
 	@test -f package.json || { echo "❌ package.json not found in $(APP_SRC)"; exit 1; }
 	@echo "$(BLUE)[OK]$(NC) Dependencies checked"
 
+generate-debian-changelog:
+	@echo "$(BLUE)[CHANGELOG]$(NC) Generating debian/changelog from git history..."
+	@bash packaging/deb/generate-changelog.sh >> packaging/deb/debian/changelog
+
 .PHONY: help
 help:
 	@echo "Available targets:"
 	@echo "  pack-linux-native  - Build Linux x64 version (default)"
-	@echo "  pack-all           - Build all platforms (currently only Linux)"
 	@echo "  clean              - Clean output directory"
 	@echo "  install            - Install to DESTDIR (auto executes pack-linux-native)"
 	@echo "  help               - Show this help message"
 	@echo "Cross compilation:"
 	@echo "  To build for a different architecture, set CUSTOM_ARCH environment variable:"
 	@echo "    make pack-linux-native CUSTOM_ARCH=arm64"
-
-# ==================== 注意事项 ====================
-# ⚠️ 1. Linux 图标必须使用 .png 或 .ico 格式，原配置的 .icns 仅适用于 macOS
-# ⚠️ 2. electron-packager 仅输出解压后的应用目录，不生成 .deb/.rpm/AppImage
-# ⚠️ 3. 系统依赖（如 libgtk-3-0, aria2）需用户自行安装，packager 不处理
-# ⚠️ 4. --ignore 使用负向正则白名单，确保只打包 dist/dist-electron 等必要目录
-# ⚠️ 5. 如需生成安装包，建议后续使用 fpm/dpkg 等工具手动封装

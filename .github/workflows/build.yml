@@ -39,13 +39,15 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        package: [deb, rpm]
-        architecture: [x64, arm64]
-        include:
-          - package: deb
-            docker_image: "debian:12"
-          - package: rpm
-            docker_image: "almalinux:8"
+        # package: [deb, rpm]
+        package: [deb]
+        architecture: [x64]
+        docker_image: [debian:12]
+        # include:
+        #   - package: deb
+        #     docker_image: "debian:12"
+        #   - package: rpm
+        #     docker_image: "almalinux:8"
       
 
     steps:
@@ -87,11 +89,14 @@ jobs:
       - name: Build Release Files
         shell: bash
         run: |
-          if [ "${{ matrix.package }}" == "deb" ]; then
-            npm run build:deb -- --${{ matrix.architecture }}
-          elif [ "${{ matrix.package }}" == "rpm" ]; then
-            npm run build:rpm -- --${{ matrix.architecture }}
-          fi
+          make generate-debian-changelog
+          cp -r ./packaging/deb/debian ./debian
+
+          mk-build-deps -i -r -t "apt-get -y"
+          dpkg-buildpackage -b -us -uc
+          
+          mkdir -p release/${{ matrix.package }}
+          mv ../*.deb release/${{ matrix.package }}/ || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

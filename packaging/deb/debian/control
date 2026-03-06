@@ -1,0 +1,39 @@
+Source: apm-store
+Section: utils
+Priority: optional
+Maintainer: Elysia <a.elysia@proton.me>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13),
+ libasound2-dev,
+ libgtk-3-dev,
+ libnotify-dev,
+ libnss3-dev,
+ libxss-dev,
+ libxtst-dev,
+ xdg-utils,
+ libatspi2.0-dev,
+ uuid-dev,
+ libsecret-1-dev,
+Standards-Version: 4.7.2
+Homepage: https://github.com/elysia-best/apm-store
+Vcs-Browser: https://github.com/elysia-best/apm-store
+Vcs-Git: https://github.com/elysia-best/apm-store.git
+
+Package: apm-store
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ desktop-file-utils,
+ apm,
+ xdg-utils,
+ shared-mime-info,
+ aria2
+Description: Client for APM App Store
+ APM (AmberPM) App Store is a modern desktop application store client designed
+ to provide a unified, lightweight, and distribution-agnostic software
+ installation experience for Linux users. Built with Electron, Vue 3, and Vite,
+ it serves as the graphical frontend for the AmberPM containerized compatibility
+ layer, which leverages fuse-overlayfs, dpkg, and AmberCE to enable seamless
+ application deployment across diverse Linux distributions.
