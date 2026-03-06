@@ -1,6 +1,6 @@
 {
   "name": "apm-store",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "dist-electron/main/index.js",
   "description": "Client for APM App Store",
   "author": "elysia-best <elysia-best@simplelinux.cn.eu.org>",
