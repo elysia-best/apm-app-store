@@ -68,18 +68,15 @@ pack-linux-native: check-deps build-vite
 install_extra_resource:
 	@echo "$(BLUE)[INSTALL]$(NC) Copying extra resources to $(DESTDIR)/opt/$(APP_NAME)/resources/extras"
 	mkdir -p $(DESTDIR)/opt/$(APP_NAME)/resources/
-	cp -r extras/shell-helper $(DESTDIR)/opt/$(APP_NAME)/resources/shell-helper
-	cp -r icons $(DESTDIR)/opt/$(APP_NAME)/resources/icons
-
-	# Install polkit policy file
-	mkdir -p $(DESTDIR)/usr/share/polkit-1/actions/
-	cp -r extras/policy/store.spark-app.amber-pm-store.policy $(DESTDIR)/usr/share/polkit-1/actions/
+	cp -rv extras/shell-helper $(DESTDIR)/opt/$(APP_NAME)/resources/shell-helper
+	cp -rv icons $(DESTDIR)/opt/$(APP_NAME)/resources/icons
 
 .PHONY: install
 install: install_extra_resource
 	@echo "$(BLUE)[INSTALL]$(NC) Installing $(APP_NAME) to DESTDIR"
 	mkdir -p $(DESTDIR)/opt/$(APP_NAME)
-	cp -r $(DIST_DIR)/* $(DESTDIR)/opt/$(APP_NAME)
+	rsync -av $(DIST_DIR)/. $(DESTDIR)/opt/$(APP_NAME)/
+	rsync -av packaging/common/. $(DESTDIR)/
 # ==================== 辅助目标 ====================
 .PHONY: clean
 clean:

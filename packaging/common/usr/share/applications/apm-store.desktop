@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=APM Store
+Exec=/opt/apm-store/apm-store %U
+Terminal=false
+Type=Application
+Icon=apm-store
+StartupWMClass=apm-store
+Name[zh_CN]=APM 琥珀应用商店
+Categories=System;
+Comment=Client for APM App Store
+MimeType=x-scheme-handler/apmstore;
