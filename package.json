@@ -39,7 +39,7 @@
     "@vitejs/plugin-vue": "^6.0.3",
     "conventional-changelog": "^7.1.1",
     "conventional-changelog-angular": "^8.1.0",
-    "electron": "^40.0.0",
+    "electron": "^41.0.2",
     "electron-packager": "^17.1.2",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
