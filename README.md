@@ -1,3 +1,4 @@
+# 本项目已被合并至[星火应用商店](https://gitee.com/spark-store-project/spark-store)
 # APM 应用商店
 
 <div align="center">
